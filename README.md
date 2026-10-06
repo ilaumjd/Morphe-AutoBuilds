@@ -94,11 +94,13 @@ All APKs live under `apks/` (ignored by Git):
 
 ```text
 apks/
-  original/   stock APKs (.apk, .apks, .apkm, .xapk), named <app>-<version>-<arch>.<ext>
-  patched/    signed patched builds, named <app>-<arch>-<source>-v<version>-<UTC date>.apk
+  original/   <app>-<arch>-original-v<version>.<ext>   (.apk, .apks, .apkm or .xapk)
+  patched/    <app>-<arch>-<source>-v<version>-<UTC date>.apk
 ```
 
-The pipeline never deletes anything in either folder. Original APKs are reused
+The pipeline never deletes anything in either folder. It finds an original purely
+by its name (for example `tiktok-arm64-v8a-original-v47.1.4.apk`), so a stock APK
+you place there by hand with the right name is used as-is. Originals are reused
 by later builds of the same app, version, and architecture, and `python -m src
 patch` never downloads a base APK; it only uses `apks/original/`. Patched
 builds accumulate, and only the APKs built in the current run are published to

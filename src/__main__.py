@@ -13,7 +13,7 @@ from src import (
     utils,
     downloader
 )
-from src.paths import PATCHED_APKS_DIR
+from src.paths import patched_apk
 
 KEYSTORE = {
     "path": getenv("KEYSTORE_PATH", "keystore/public.jks"),
@@ -242,7 +242,7 @@ def run_build(
 
         input_apk.unlink(missing_ok=True)
 
-        signed_apk = PATCHED_APKS_DIR / f"{app_name}-{arch}-{name}-v{version}-{BUILD_DATE}.apk"
+        signed_apk = patched_apk(app_name, arch, name, version, BUILD_DATE)
         signed_apk.parent.mkdir(parents=True, exist_ok=True)
         sign_apk(output_apk, signed_apk)
         output_apk.unlink(missing_ok=True)

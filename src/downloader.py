@@ -2,14 +2,11 @@ import json
 import logging
 import importlib
 import os
-import re
 import shutil
 import zipfile
 from pathlib import Path
 from src import utils, session
-from src.paths import ORIGINAL_APKS_DIR
-
-ORIGINAL_SUFFIXES = {".apk", ".apks", ".apkm", ".xapk"}
+from src.paths import ORIGINAL_APKS_DIR, ORIGINAL_SUFFIXES, original_candidates, original_stem
 
 
 # Download stores, in the order they are tried.
@@ -48,11 +45,10 @@ def download_resource(url: str, name: str = None) -> Path:
 
 
 def cached_apk(app_name: str, version: str, arch: str) -> Path | None:
-    """Copy a cached original APK into the working directory, if available."""
-    cache_dir = ORIGINAL_APKS_DIR
-    safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{app_name}-{version}-{arch}")
-    for cached in sorted(cache_dir.glob(f"{safe_key}.*")):
-        if cached.suffix.lower() not in ORIGINAL_SUFFIXES:
+    """Copy a stored original APK (apks/original/<app>-<arch>-original-v<version>.<ext>)
+    into the working directory, if available."""
+    for cached in original_candidates(app_name, arch, version):
+        if not cached.is_file():
             continue
         if zipfile.is_zipfile(cached):
             destination = Path(cached.name)
@@ -78,11 +74,10 @@ def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Pat
         return cached
 
     cache_dir = ORIGINAL_APKS_DIR
-    safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{app_name}-{version}-{arch}")
     cache_dir.mkdir(parents=True, exist_ok=True)
     downloaded = download_resource(url)
     if downloaded.suffix.lower() in ORIGINAL_SUFFIXES:
-        cached = cache_dir / f"{safe_key}{downloaded.suffix.lower()}"
+        cached = cache_dir / f"{original_stem(app_name, arch, version)}{downloaded.suffix.lower()}"
         shutil.copy2(downloaded, cached)
         logging.info(f"Saved original APK: {cached}")
     return downloaded

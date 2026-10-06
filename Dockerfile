@@ -9,7 +9,7 @@ RUN apt-get update \
 WORKDIR /workspace
 
 COPY requirements.txt /tmp/requirements.txt
-RUN python -m pip install --no-cache-dir --break-system-packages -r /tmp/requirements.txt
+RUN python -m pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY . /workspace
 RUN chmod +x /workspace/scripts/container-entrypoint.sh /workspace/scripts/local_pipeline.sh

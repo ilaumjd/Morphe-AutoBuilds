@@ -514,6 +514,13 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
         table = found_soup.find('div', class_='variants-table')
         if table:
             rows = table.find_all('div', class_='table-row')
+    if config.get('universal_fallback'):
+        # The ARM64 attempt failed, so prefer variants APKMirror labels universal/noarch
+        # (stable sort keeps the page order otherwise).
+        rows = sorted(
+            rows,
+            key=lambda r: not any(k in r.get_text().lower() for k in ('universal', 'noarch')),
+        )
     download_page_url = None
     
     def _row_matches(row_text: str) -> bool:

@@ -119,6 +119,7 @@ def download_platform(
     arch: str = None,
     override_version: str = None,
     cached_only: bool = False,
+    universal_fallback: bool = False,
 ) -> tuple[Path | None, str | None, list[str]]:
     try:
         config_path = Path("apps") / platform / f"{app_name}.json"
@@ -155,9 +156,15 @@ def download_platform(
         if not config or not config.get("package"):
             raise FileNotFoundError(f"Config file not found for {app_name} on {platform}")
         
-        # Override arch only if explicitly specified non-universal, or if config has no arch set
+        # Override arch only if explicitly specified non-universal, or if config has no arch set.
+        # An entry that is explicitly universal keeps the arch from the app config; only the
+        # universal retry after a failed ARM64 attempt (universal_fallback) really asks the
+        # stores for a universal variant, instead of repeating the config's ARM64 request.
         if arch and arch != "universal":
             config['arch'] = arch
+        elif universal_fallback:
+            config['arch'] = "universal"
+            config['universal_fallback'] = True
         elif 'arch' not in config or not config['arch']:
             config['arch'] = arch or "universal"
 

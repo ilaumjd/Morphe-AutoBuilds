@@ -147,11 +147,20 @@ def sign_apk(unsigned_apk: Path, signed_apk: Path) -> None:
         "--in", str(unsigned_apk), "--out", str(signed_apk)
     ])
 
-def download_apk(app_name: str, cli: Path, patches: Path, arch: str, cached_only: bool = False):
-    """Return a usable original APK, optionally using the local cache only."""
+def download_apk(
+    app_name: str, cli: Path, patches: Path, arch: str,
+    cached_only: bool = False, universal_fallback: bool = False,
+):
+    """Return a usable original APK, optionally using the local cache only.
+
+    ``universal_fallback`` marks the universal retry after an ARM64 attempt
+    failed: it requests a universal variant rather than the arch in the app
+    config. An entry that is explicitly universal leaves it False.
+    """
     for platform in downloader.PLATFORMS:
         apk_path, ver, cands = downloader.download_platform(
-            app_name, platform, str(cli), str(patches), arch, cached_only=cached_only
+            app_name, platform, str(cli), str(patches), arch,
+            cached_only=cached_only, universal_fallback=universal_fallback,
         )
         if not apk_path:
             continue
@@ -164,9 +173,13 @@ def download_apk(app_name: str, cli: Path, patches: Path, arch: str, cached_only
         return apk_path, ver, cands, platform
     return None, None, [], None
 
-def download_original(app_name: str, cli: Path, patches: Path, arch: str) -> bool:
+def download_original(
+    app_name: str, cli: Path, patches: Path, arch: str, universal_fallback: bool = False,
+) -> bool:
     """Fetch and validate an original APK, leaving its persistent cache intact."""
-    input_apk, version, _, _ = download_apk(app_name, cli, patches, arch)
+    input_apk, version, _, _ = download_apk(
+        app_name, cli, patches, arch, universal_fallback=universal_fallback
+    )
     if input_apk is None or not version:
         return False
     input_apk.unlink(missing_ok=True)
@@ -176,11 +189,12 @@ def download_original(app_name: str, cli: Path, patches: Path, arch: str) -> boo
 
 def run_build(
     app_name: str, source: str, arch: str, cli: Path, patches: Path, name: str,
-    cached_only: bool = False,
+    cached_only: bool = False, universal_fallback: bool = False,
 ) -> str | None:
     """Patch and sign one app. The patch stage can be restricted to cached originals."""
     input_apk, version, candidates, platform = download_apk(
-        app_name, cli, patches, arch, cached_only=cached_only
+        app_name, cli, patches, arch,
+        cached_only=cached_only, universal_fallback=universal_fallback,
     )
     if input_apk is None or not version:
         location = "cache" if cached_only else "stores"
@@ -203,6 +217,7 @@ def run_build(
             input_apk, _, _ = downloader.download_platform(
                 app_name, platform, str(cli), str(patches), arch,
                 override_version=ver, cached_only=cached_only,
+                universal_fallback=universal_fallback,
             )
             if input_apk is None:
                 continue
@@ -321,10 +336,13 @@ def main(stage: str = "all"):
                 logging.warning(f"ARM64 {action.lower()} unavailable; retrying {fallback_label}...")
                 try:
                     if stage == "download":
-                        apk_path = download_original(app_name, *tools[source][:2], "universal")
+                        apk_path = download_original(
+                            app_name, *tools[source][:2], "universal", universal_fallback=True
+                        )
                     else:
                         apk_path = run_build(
-                            app_name, source, "universal", *tools[source], cached_only=stage == "patch"
+                            app_name, source, "universal", *tools[source],
+                            cached_only=stage == "patch", universal_fallback=True,
                         )
                 except Exception as e:
                     logging.error(f"❌ {fallback_label} failed: {e}")

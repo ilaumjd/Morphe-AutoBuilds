@@ -3,6 +3,7 @@ import logging
 import re
 import os
 import zipfile
+from datetime import datetime, timezone
 from sys import exit
 from pathlib import Path
 from os import getenv
@@ -17,6 +18,7 @@ KEYSTORE = {
     "password": getenv("KEYSTORE_PASSWORD", "public"),
     "alias": getenv("KEYSTORE_ALIAS", "public"),
 }
+BUILD_DATE = getenv("BUILD_DATE") or datetime.now(timezone.utc).strftime("%Y%m%d")
 
 def _should_retry_with_older_version(output: str | None) -> bool:
     """Detect common patterns that indicate the chosen app version is not
@@ -219,7 +221,7 @@ def run_build(app_name: str, source: str, arch: str, cli: Path, patches: Path, n
 
         input_apk.unlink(missing_ok=True)
 
-        signed_apk = Path("dist") / f"{app_name}-{arch}-{name}-v{version}.apk"
+        signed_apk = Path("dist") / f"{app_name}-{arch}-{name}-v{version}-{BUILD_DATE}.apk"
         signed_apk.parent.mkdir(exist_ok=True)
         sign_apk(output_apk, signed_apk)
         output_apk.unlink(missing_ok=True)

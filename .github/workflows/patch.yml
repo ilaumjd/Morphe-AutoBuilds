@@ -2,6 +2,12 @@ name: Build curated APKs
 
 on:
   workflow_dispatch:
+    inputs:
+      force:
+        description: "Build even when patch bundles are unchanged"
+        type: boolean
+        required: false
+        default: false
   schedule:
     - cron: "0 6 * * *"
 
@@ -36,13 +42,32 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
+      - name: Restore patch state
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release download latest --pattern .patch-state.json --dir . 2>/dev/null || true
+
+      - name: Check patch sources
+        id: updates
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python scripts/check_patch_updates.py --state .patch-state.json ${{ inputs.force && '--force' || '' }}
+
+      - name: Set build date
+        if: steps.updates.outputs.should_build == 'true'
+        id: build-date
+        run: echo "value=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
       - name: Build configured entries
+        if: steps.updates.outputs.should_build == 'true'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TRAWL_URL: http://localhost:8191
+          BUILD_DATE: ${{ steps.build-date.outputs.value }}
         run: python -m src
 
       - name: Publish latest build
+        if: steps.updates.outputs.should_build == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -58,4 +83,4 @@ jobs:
             for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk#dist/}"; done
           } > release-notes.md
           gh release delete latest --yes --cleanup-tag 2>/dev/null || true
-          gh release create latest "${apks[@]}" --title "Latest build" --notes-file release-notes.md --latest
+          gh release create latest "${apks[@]}" .patch-state.json --title "Latest build" --notes-file release-notes.md --latest

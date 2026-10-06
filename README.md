@@ -2,7 +2,8 @@
 
 Personal, curated Android patch builds using [Morphe](https://github.com/MorpheApp).
 GitHub Actions builds every entry in `patch-config.json` daily and publishes the
-signed APKs to the `latest` release.
+signed APKs to the `latest` release when a patch bundle changes. Run the workflow
+with **force** enabled to rebuild on demand.
 
 ## Add an app
 
@@ -73,7 +74,8 @@ python -m src                                    # every entry
 APP_NAME=your-app ARCH=arm64-v8a python -m src  # one app / arch
 ```
 
-Signed APKs are written to `dist/`.
+Signed APKs are written to `dist/`. Their filenames include the UTC build date,
+for example `your-app-universal-your-source-v1.2.3-20261006.apk`.
 
 ## Signing
 

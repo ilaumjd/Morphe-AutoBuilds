@@ -1,0 +1,26 @@
+services:
+  builder:
+    build: .
+    environment:
+      GH_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
+      GITHUB_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
+      APK_CACHE_DIR: /data/apk-cache
+      TRAWL_URL: http://trawl:8191
+    volumes:
+      - ./:/workspace
+      - apk-cache:/data/apk-cache
+      - build-state:/data/state
+      - morphe-data:/workspace/morphe-data
+    depends_on:
+      - trawl
+    restart: unless-stopped
+
+  trawl:
+    image: ghcr.io/germondai/trawl:latest
+    shm_size: 1gb
+    restart: unless-stopped
+
+volumes:
+  apk-cache:
+  build-state:
+  morphe-data:

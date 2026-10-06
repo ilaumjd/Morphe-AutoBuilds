@@ -88,6 +88,23 @@ APP_NAME=your-app ARCH=arm64-v8a python -m src  # one app / arch
 Signed APKs are written to `dist/`. Their filenames include the UTC build date,
 for example `your-app-universal-your-source-v1.2.3-20261006.apk`.
 
+## Local Void Linux runner
+
+`docker-compose.yml` runs the pipeline in a persistent container and keeps base
+APK downloads in the named `apk-cache` volume. It checks for patch updates on
+startup and every day at 06:00 UTC, then publishes successful builds to the
+`latest` GitHub release.
+
+Create a `.env` file beside `docker-compose.yml` with a GitHub token that can
+write repository releases:
+
+```text
+GH_TOKEN=github_pat_...
+```
+
+Start the runner with `docker-compose up -d --build`. To run it once manually,
+use `docker-compose run --rm builder once`.
+
 ## Signing
 
 APKs are signed with `keystore/public.jks` by default. To use your own key, set

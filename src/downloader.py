@@ -1,6 +1,10 @@
 import json
 import logging
 import importlib
+import os
+import re
+import shutil
+import zipfile
 from pathlib import Path
 from src import utils, session
 
@@ -38,6 +42,27 @@ def download_resource(url: str, name: str = None) -> Path:
     )
 
     return filepath
+
+
+def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Path:
+    """Download a base APK once and reuse it from the persistent local cache."""
+    cache_root = os.getenv("APK_CACHE_DIR")
+    safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{app_name}-{version}-{arch}")
+    if cache_root:
+        cache_dir = Path(cache_root)
+        cache_dir.mkdir(parents=True, exist_ok=True)
+        for cached in cache_dir.glob(f"{safe_key}.*"):
+            if zipfile.is_zipfile(cached):
+                destination = Path(cached.name)
+                shutil.copy2(cached, destination)
+                logging.info(f"Using cached base APK: {cached.name}")
+                return destination
+            cached.unlink(missing_ok=True)
+
+    downloaded = download_resource(url)
+    if cache_root and downloaded.suffix.lower() in {".apk", ".apkm", ".apks", ".xapk"}:
+        shutil.copy2(downloaded, Path(cache_root) / f"{safe_key}{downloaded.suffix.lower()}")
+    return downloaded
 
 def download_required(source: str) -> tuple[list[Path], str]:
     """Download the CLI (.jar) and patch bundle (.mpp) listed in sources/<source>.json."""
@@ -161,7 +186,7 @@ def download_platform(
                 last_error = ValueError(f"No download link found for {app_name} version {version}")
                 continue
             try:
-                filepath = download_resource(download_link)
+                filepath = download_cached_apk(download_link, app_name, version, arch or "universal")
                 return filepath, version, candidates
             except Exception as e:
                 last_error = e

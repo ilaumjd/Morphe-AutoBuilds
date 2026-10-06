@@ -1,0 +1,11 @@
+.git
+.env
+dist
+morphe-data
+__pycache__
+*.apk
+*.apkm
+*.apks
+*.xapk
+*.jar
+*.mpp

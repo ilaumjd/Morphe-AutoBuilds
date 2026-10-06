@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: build
+  cancel-in-progress: false
+
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
@@ -36,18 +40,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TRAWL_URL: http://localhost:8191
-        run: |
-          set -euo pipefail
-          jq -c '.patch_list[]' patch-config.json | while read -r entry; do
-            app_name=$(jq -r '.app_name' <<< "$entry")
-            source=$(jq -r '.source' <<< "$entry")
-            arches=$(jq -r --arg app "$app_name" --arg source "$source" \
-              '.[] | select(.app_name == $app and .source == $source) | .arches[]' \
-              arch-config.json)
-            for arch in $arches; do
-              APP_NAME="$app_name" SOURCE="$source" ARCH="$arch" python -m src
-            done
-          done
+        run: python -m src
 
       - name: Publish latest build
         env:
@@ -55,8 +48,14 @@ jobs:
         run: |
           set -euo pipefail
           shopt -s nullglob
-          apks=( *.apk )
-          test "${#apks[@]}" -gt 0
-          printf 'Curated build generated on %s UTC.\n' "$(date -u +'%Y-%m-%d %H:%M')" > release-notes.md
+          apks=( dist/*.apk )
+          if [ "${#apks[@]}" -eq 0 ]; then
+            echo "::error::No APKs were built"
+            exit 1
+          fi
+          {
+            printf 'Curated build generated on %s UTC.\n\n' "$(date -u +'%Y-%m-%d %H:%M')"
+            for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk#dist/}"; done
+          } > release-notes.md
           gh release delete latest --yes --cleanup-tag 2>/dev/null || true
           gh release create latest "${apks[@]}" --title "Latest build" --notes-file release-notes.md --latest

@@ -1,7 +1,8 @@
 __pycache__/
-NUL
 *.apk
+*.apkm
+*.xapk
 *.jar
 *.mpp
-tools/
+dist/
 release-notes.md

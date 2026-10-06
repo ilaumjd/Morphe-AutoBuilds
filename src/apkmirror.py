@@ -1,5 +1,4 @@
 import re
-import json
 import logging
 from bs4 import BeautifulSoup
 from urllib.parse import quote
@@ -484,7 +483,7 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
                             # Save as fallback ONLY if we haven't found any page yet
                             if found_soup is None:
                                 found_soup = soup
-                                logging.warning(f"Saved as fallback page (may list multiple versions)")
+                                logging.warning("Saved as fallback page (may list multiple versions)")
                             continue
                             
                     elif response.status_code == 404:
@@ -567,8 +566,10 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
                 if download_page_url:
                     break
     
-    # If exact version not found, try to find any variant matching criteria
-    if not download_page_url:
+    # If exact version not found, try any variant matching criteria -- but only
+    # on a page confirmed to be this version's release page. A fallback page
+    # lists other versions, and picking from it would mislabel the build.
+    if not download_page_url and correct_version_page:
         for row in rows:
             row_text = row.get_text()
             if 'variant' in row_text.lower() and 'arch' in row_text.lower():
@@ -617,15 +618,6 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
 
     return None
 
-def get_architecture_criteria(arch: str) -> dict:
-    """Map architecture names to APKMirror criteria"""
-    arch_mapping = {
-        "arm64-v8a": "arm64-v8a",
-        "armeabi-v7a": "armeabi-v7a", 
-        "universal": "universal"
-    }
-    return arch_mapping.get(arch, "universal")
-    
 def get_latest_version(app_name: str, config: dict) -> str:
     global _blocked_by_cloudflare
     _blocked_by_cloudflare = False

@@ -1,14 +1,12 @@
 import json
 import logging
+import importlib
 from pathlib import Path
-from src import (
-    utils,
-    apkpure,
-    session,
-    uptodown,
-    aptoide,
-    apkmirror,
-)
+from src import utils, session
+
+
+# Download stores, in the order they are tried.
+PLATFORMS = ["apkmirror", "aptoide", "uptodown", "apkpure"]
 
 
 class UnknownPatchCompatibilityError(ValueError):
@@ -42,6 +40,7 @@ def download_resource(url: str, name: str = None) -> Path:
     return filepath
 
 def download_required(source: str) -> tuple[list[Path], str]:
+    """Download the CLI (.jar) and patch bundle (.mpp) listed in sources/<source>.json."""
     source_path = Path("sources") / f"{source}.json"
     with source_path.open() as json_file:
         repos_info = json.load(json_file)
@@ -50,30 +49,24 @@ def download_required(source: str) -> tuple[list[Path], str]:
     downloaded_files = []
 
     for repo_info in repos_info[1:]:
-        release = utils.detect_release(repo_info)
-        entry_name = (
-            repo_info.get("repo")
-            or repo_info.get("project")
-            or repo_info.get("name")
-            or ""
-        ).lower()
-
+        release = utils.detect_github_release(
+            repo_info["user"], repo_info["repo"], repo_info.get("tag", "latest")
+        )
+        logging.info(f"{repo_info['user']}/{repo_info['repo']}: {release['tag_name']}")
         for asset in release["assets"]:
-            asset_name = asset["name"]
-            asset_url = asset["browser_download_url"]
-            if asset_name.endswith(".asc"):
-                continue
-
-            # Keep the existing Morphe-specific asset filtering.
-            if "morphe-patches" in entry_name or "morphe-cli" in entry_name:
-                if asset_name.endswith(".mpp") or (
-                    asset_name.lower().endswith(".jar")
-                ):
-                    downloaded_files.append(download_resource(asset_url))
-            else:
-                downloaded_files.append(download_resource(asset_url))
+            if asset["name"].endswith((".jar", ".mpp")):
+                downloaded_files.append(download_resource(asset["browser_download_url"]))
 
     return downloaded_files, name
+
+def download_apkeditor() -> Path:
+    release = utils.detect_github_release("REAndroid", "APKEditor", "latest")
+
+    for asset in release["assets"]:
+        if asset["name"].startswith("APKEditor") and asset["name"].endswith(".jar"):
+            return download_resource(asset["browser_download_url"])
+
+    raise RuntimeError("APKEditor .jar file not found in the latest release")
 
 def download_platform(
     app_name: str,
@@ -91,7 +84,7 @@ def download_platform(
                 config = json.load(json_file)
         else:
             # Fallback: search other platform config directories for this app
-            for other_platform in ["apkmirror", "uptodown", "apkpure", "aptoide"]:
+            for other_platform in PLATFORMS:
                 if other_platform == platform:
                     continue
                 other_path = Path("apps") / other_platform / f"{app_name}.json"
@@ -123,7 +116,7 @@ def download_platform(
         elif 'arch' not in config or not config['arch']:
             config['arch'] = arch or "universal"
 
-        platform_module = globals()[platform]
+        platform_module = importlib.import_module(f"src.{platform}")
 
         # Candidate versions (highest -> lowest):
         # - If config pins a version: only try that.
@@ -184,40 +177,3 @@ def download_platform(
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
         return None, None, []
-
-# Update the specific download functions
-def download_apkmirror(
-    app_name: str,
-    cli: str,
-    patches: str,
-    arch: str = None,
-    override_version: str = None,
-) -> tuple[Path | None, str | None, list[str]]:
-    return download_platform(app_name, "apkmirror", cli, patches, arch, override_version)
-
-def download_apkpure(
-    app_name: str,
-    cli: str,
-    patches: str,
-    arch: str = None,
-    override_version: str = None,
-) -> tuple[Path | None, str | None, list[str]]:
-    return download_platform(app_name, "apkpure", cli, patches, arch, override_version)
-
-def download_aptoide(
-    app_name: str,
-    cli: str,
-    patches: str,
-    arch: str = None,
-    override_version: str = None,
-) -> tuple[Path | None, str | None, list[str]]:
-    return download_platform(app_name, "aptoide", cli, patches, arch, override_version)
-
-def download_uptodown(
-    app_name: str,
-    cli: str,
-    patches: str,
-    arch: str = None,
-    override_version: str = None,
-) -> tuple[Path | None, str | None, list[str]]:
-    return download_platform(app_name, "uptodown", cli, patches, arch, override_version)

@@ -2,7 +2,8 @@
   "patch_list": [
     {
       "app_name": "tiktok",
-      "source": "hushfeed"
+      "source": "hushfeed",
+      "arches": ["universal"]
     }
   ]
 }

@@ -1,72 +1,82 @@
 # Morphe AutoBuilds
 
-Personal, configuration-driven Android patch builds. GitHub Actions builds the
-entries you define each day and publishes them to the `latest` release.
+Personal, curated Android patch builds using [Morphe](https://github.com/MorpheApp).
+GitHub Actions builds every entry in `patch-config.json` daily and publishes the
+signed APKs to the `latest` release.
 
-## Configure a build
+## Add an app
 
-Each entry appears once in `patch-config.json`:
+1. **Add a build entry** in `patch-config.json`:
 
-```json
-{
-  "patch_list": [
-    { "app_name": "your-app", "source": "your-source" }
-  ]
-}
-```
+   ```json
+   {
+     "patch_list": [
+       { "app_name": "your-app", "source": "your-source", "arches": ["universal"] }
+     ]
+   }
+   ```
 
-Choose one or more target architectures in `arch-config.json`:
+   `arches` accepts `universal`, `arm64-v8a` and `armeabi-v7a`.
 
-```json
-[
-  {
-    "app_name": "your-app",
-    "source": "your-source",
-    "arches": ["universal"]
-  }
-]
-```
+2. **Describe where to download the app** in `apps/<store>/<app_name>.json`.
+   Stores are tried in order: APKMirror, Aptoide, Uptodown, APKPure. A store
+   without its own file reuses the `package`/`version` from another store's
+   file. Example:
 
-Add store definitions under `apps/` for the download providers you want to use.
-The builder tries APKMirror, Aptoide, Uptodown, and APKPure in that order when
-the corresponding definition is available.
+   ```json
+   {
+     "org": "publisher",
+     "name": "your-app",
+     "type": "APK",
+     "arch": "universal",
+     "dpi": "nodpi",
+     "package": "com.example.app",
+     "version": ""
+   }
+   ```
 
-Add one source definition at `sources/your-source.json`. A Morphe source needs
-the Morphe CLI and the patch bundle release:
+   `version` pins the app version. Leave it out to build the newest version
+   the patch bundle declares compatible.
 
-```json
-[
-  { "name": "your-source" },
-  { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
-  { "user": "owner", "repo": "patch-bundle", "tag": "latest" }
-]
-```
+3. **Define the patch source** in `sources/<source>.json`: a display name
+   (used in the APK filename), the Morphe CLI release and the patch bundle
+   release. `tag` is `latest`, `prerelease` or an explicit tag.
 
-To explicitly enable or disable patches, add
-`patches/your-app-your-source.txt`. Prefix a patch name with `+` to enable it
-or `-` to disable it. Options can be included as `{key=value}` after an enabled
-patch name.
+   ```json
+   [
+     { "name": "your-source" },
+     { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
+     { "user": "owner", "repo": "patch-bundle", "tag": "latest" }
+   ]
+   ```
+
+4. **Optionally select patches** in `patches/<app_name>-<source>.txt`, one per
+   line:
+
+   ```text
+   - Patch to disable
+   + Patch to enable
+   + Patch with options {key=value, other=value}
+   ```
 
 ## Build and release
 
-Run **Build curated APKs** from the Actions tab to build immediately. The same
-workflow runs daily at 06:00 UTC and replaces the `latest` release with the
-newest successful build artifacts.
+Run **Build curated APKs** from the Actions tab, or wait for the daily run at
+06:00 UTC. Successful builds replace the `latest` release; the run is marked
+failed if any entry could not be built.
 
-For a local build, install Python 3.11+, Java, `zip`, and Android `apksigner`.
-Then install dependencies and run:
+Local build (needs Python 3.11+, Java 21 and Android build-tools for `apksigner`):
 
 ```bash
 pip install -r requirements.txt
-APP_NAME="your-app" SOURCE="your-source" ARCH="universal" python -m src
+python -m src                                    # every entry
+APP_NAME=your-app ARCH=arm64-v8a python -m src  # one app / arch
 ```
 
-## Project layout
+Signed APKs are written to `dist/`.
 
-```text
-apps/          Store download definitions
-sources/       Patch tool and bundle definitions
-patches/       Optional per-entry patch rules
-src/           Build implementation
-.github/       Scheduled GitHub Actions workflow
-```
+## Signing
+
+APKs are signed with `keystore/public.jks` by default. To use your own key, set
+`KEYSTORE_PATH`, `KEYSTORE_PASSWORD` and `KEYSTORE_ALIAS`. Changing the key
+means existing installs must be uninstalled before updating.

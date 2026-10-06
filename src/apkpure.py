@@ -1,5 +1,4 @@
-import json
-import logging 
+import logging
 
 from src import session 
 from bs4 import BeautifulSoup

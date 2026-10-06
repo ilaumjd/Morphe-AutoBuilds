@@ -1,0 +1,15 @@
+[
+  {
+    "name": "hushfeed"
+  },
+  {
+    "user": "MorpheApp",
+    "repo": "morphe-cli",
+    "tag": "latest"
+  },
+  {
+    "user": "SysAdminDoc",
+    "repo": "hushfeed",
+    "tag": "latest"
+  }
+]

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 cd /workspace
+git config --global --add safe.directory /workspace
 git pull --ff-only origin main
 
 state_dir=/data/state

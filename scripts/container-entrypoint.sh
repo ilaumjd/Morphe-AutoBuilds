@@ -2,11 +2,11 @@
 set -euo pipefail
 
 run_once() {
-  /workspace/scripts/local_pipeline.sh || true
+  bash /workspace/scripts/local_pipeline.sh || true
 }
 
 if [ "${1:-daemon}" = "once" ]; then
-  exec /workspace/scripts/local_pipeline.sh
+  exec bash /workspace/scripts/local_pipeline.sh
 fi
 
 run_once

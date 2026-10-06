@@ -12,5 +12,4 @@ COPY requirements.txt /tmp/requirements.txt
 RUN python -m pip install --no-cache-dir -r /tmp/requirements.txt
 
 COPY . /workspace
-RUN chmod +x /workspace/scripts/container-entrypoint.sh /workspace/scripts/local_pipeline.sh
-ENTRYPOINT ["/workspace/scripts/container-entrypoint.sh"]
+ENTRYPOINT ["/bin/bash", "/workspace/scripts/container-entrypoint.sh"]

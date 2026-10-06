@@ -7,3 +7,5 @@ __pycache__/
 dist/
 release-notes.md
 .patch-state.json
+.previous-patch-state.json
+build-results.json

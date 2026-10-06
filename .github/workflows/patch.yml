@@ -45,13 +45,15 @@ jobs:
       - name: Restore patch state
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release download latest --pattern .patch-state.json --dir . 2>/dev/null || true
+        run: |
+          gh release download latest --pattern .patch-state.json --dir . 2>/dev/null || true
+          if [ -f .patch-state.json ]; then mv .patch-state.json .previous-patch-state.json; fi
 
       - name: Check patch sources
         id: updates
         env:
           GITHUB_TOKEN: ${{ github.token }}
-        run: python scripts/check_patch_updates.py --state .patch-state.json ${{ inputs.force && '--force' || '' }}
+        run: python scripts/check_patch_updates.py --previous .previous-patch-state.json --state .patch-state.json ${{ inputs.force && '--force' || '' }}
 
       - name: Set build date
         if: steps.updates.outputs.should_build == 'true'
@@ -60,14 +62,21 @@ jobs:
 
       - name: Build configured entries
         if: steps.updates.outputs.should_build == 'true'
+        id: build
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
           TRAWL_URL: http://localhost:8191
           BUILD_DATE: ${{ steps.build-date.outputs.value }}
+          SOURCES_TO_BUILD: ${{ steps.updates.outputs.sources_to_build }}
         run: python -m src
 
+      - name: Finalize successful source state
+        if: always() && steps.updates.outputs.should_build == 'true' && hashFiles('build-results.json') != ''
+        run: python scripts/finalize_patch_state.py --previous .previous-patch-state.json --candidate .patch-state.json --results build-results.json
+
       - name: Publish latest build
-        if: steps.updates.outputs.should_build == 'true'
+        if: always() && steps.updates.outputs.should_build == 'true' && hashFiles('dist/*.apk') != ''
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -82,5 +91,13 @@ jobs:
             printf 'Curated build generated on %s UTC.\n\n' "$(date -u +'%Y-%m-%d %H:%M')"
             for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk#dist/}"; done
           } > release-notes.md
-          gh release delete latest --yes --cleanup-tag 2>/dev/null || true
-          gh release create latest "${apks[@]}" .patch-state.json --title "Latest build" --notes-file release-notes.md --latest
+          if gh release view latest >/dev/null 2>&1; then
+            gh release upload latest "${apks[@]}" .patch-state.json --clobber
+            gh release edit latest --title "Latest build" --notes-file release-notes.md
+          else
+            gh release create latest "${apks[@]}" .patch-state.json --title "Latest build" --notes-file release-notes.md --latest
+          fi
+
+      - name: Report failed entries
+        if: always() && steps.build.outcome == 'failure'
+        run: exit 1

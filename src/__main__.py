@@ -245,6 +245,11 @@ def load_entries() -> list[dict]:
             entries = [{"app_name": app_name, "source": source}]
     if source:
         entries = [e for e in entries if e["source"] == source]
+    configured_sources = {
+        item for item in getenv("SOURCES_TO_BUILD", "").split(",") if item
+    }
+    if configured_sources:
+        entries = [entry for entry in entries if entry["source"] in configured_sources]
     if arch:
         entries = [{**e, "arches": [arch]} for e in entries]
     return entries
@@ -257,6 +262,7 @@ def main():
 
     tools: dict[str, tuple[Path, Path, str]] = {}
     built, failed = [], []
+    source_results: dict[str, list[bool]] = {}
 
     for entry in entries:
         app_name, source = entry["app_name"], entry["source"]
@@ -288,7 +294,23 @@ def main():
                 except Exception as e:
                     logging.error(f"❌ {fallback_label} failed: {e}")
 
+            source_results.setdefault(source, []).append(bool(apk_path))
             (built if apk_path else failed).append(apk_path or label)
+
+    successful_sources = [
+        source for source, results in source_results.items() if all(results)
+    ]
+    Path(getenv("BUILD_RESULTS_PATH", "build-results.json")).write_text(
+        json.dumps(
+            {
+                "built": built,
+                "failed": failed,
+                "successful_sources": successful_sources,
+            },
+            indent=2,
+        )
+        + "\n"
+    )
 
     print(f"\n🎯 Built {len(built)} APK(s):")
     for apk in built:

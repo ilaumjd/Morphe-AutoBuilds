@@ -81,31 +81,50 @@ def write_output(name: str, value: str) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
+    parser.add_argument("--previous", type=Path, required=True)
     parser.add_argument("--state", type=Path, required=True)
     parser.add_argument("--force", action="store_true")
     args = parser.parse_args()
 
     config = json.loads((ROOT / "patch-config.json").read_text())
-    canonical_config = json.dumps(config, sort_keys=True, separators=(",", ":"))
+    entries_by_source: dict[str, list[dict]] = {}
+    for entry in config["patch_list"]:
+        entries_by_source.setdefault(entry["source"], []).append(entry)
+
     current = {
-        "configuration_sha256": hashlib.sha256(canonical_config.encode()).hexdigest(),
         "sources": {
-            source: source_state(source)
-            for source in sorted({entry["source"] for entry in config["patch_list"]})
+            source: {
+                "entries_sha256": hashlib.sha256(
+                    json.dumps(entries, sort_keys=True, separators=(",", ":")).encode()
+                ).hexdigest(),
+                "bundles": source_state(source),
+            }
+            for source, entries in sorted(entries_by_source.items())
         },
     }
 
     try:
-        previous = json.loads(args.state.read_text())
+        previous = json.loads(args.previous.read_text())
     except FileNotFoundError:
-        previous = None
+        previous = {"sources": {}}
     except json.JSONDecodeError:
-        previous = None
+        previous = {"sources": {}}
 
     args.state.write_text(json.dumps(current, indent=2) + "\n")
-    should_build = args.force or current != previous
+    previous_sources = previous.get("sources", {})
+    sources_to_build = [
+        source
+        for source, state in current["sources"].items()
+        if args.force or state != previous_sources.get(source)
+    ]
+    should_build = bool(sources_to_build)
     write_output("should_build", str(should_build).lower())
-    print("Patch state changed." if should_build else "Patch state is unchanged.")
+    write_output("sources_to_build", ",".join(sources_to_build))
+    print(
+        f"Sources requiring a build: {', '.join(sources_to_build)}"
+        if should_build
+        else "Patch state is unchanged."
+    )
 
 
 if __name__ == "__main__":

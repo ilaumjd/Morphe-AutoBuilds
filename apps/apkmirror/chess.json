@@ -1,0 +1,9 @@
+{
+  "org": "chess-com",
+  "name": "chess",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "com.chess",
+  "version": "4.10.0"
+}

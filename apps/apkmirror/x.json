@@ -1,0 +1,10 @@
+{
+  "org": "x-corp",
+  "name": "twitter",
+  "release_prefix": "twitter",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "com.twitter.android",
+  "version": "12.19.1-release.0"
+}

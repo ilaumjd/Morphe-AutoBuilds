@@ -1,0 +1,9 @@
+{
+  "org": "redditinc",
+  "name": "reddit",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "com.reddit.frontpage",
+  "version": "2026.38.0"
+}

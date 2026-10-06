@@ -280,6 +280,14 @@ def main():
                 logging.error(f"❌ {label} failed: {e}")
                 apk_path = None
 
+            if not apk_path and arch == "arm64-v8a":
+                fallback_label = f"{app_name}/{source}/universal"
+                logging.warning(f"ARM64 build unavailable; retrying {fallback_label}...")
+                try:
+                    apk_path = run_build(app_name, source, "universal", *tools[source])
+                except Exception as e:
+                    logging.error(f"❌ {fallback_label} failed: {e}")
+
             (built if apk_path else failed).append(apk_path or label)
 
     print(f"\n🎯 Built {len(built)} APK(s):")

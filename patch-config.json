@@ -3,7 +3,7 @@
     {
       "app_name": "tiktok",
       "source": "hushfeed",
-      "arches": ["universal"]
+      "arches": ["arm64-v8a"]
     }
   ]
 }

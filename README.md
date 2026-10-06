@@ -9,7 +9,7 @@ with **force** enabled to rebuild on demand.
 
 | App | Architecture | Obtainium |
 | --- | --- | --- |
-| TikTok (HushFeed) | universal | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.zhiliaoapp.musically%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522TikTok%2520%2528HushFeed%2529%2522%257D) |
+| TikTok (HushFeed) | arm64-v8a, universal fallback | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.zhiliaoapp.musically%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522TikTok%2520%2528HushFeed%2529%2522%257D) |
 
 The link opens Obtainium with this release source prefilled; confirm the import
 to track and update the build.
@@ -21,12 +21,14 @@ to track and update the build.
    ```json
    {
      "patch_list": [
-       { "app_name": "your-app", "source": "your-source", "arches": ["universal"] }
+       { "app_name": "your-app", "source": "your-source", "arches": ["arm64-v8a"] }
      ]
    }
    ```
 
-   `arches` accepts `universal`, `arm64-v8a` and `armeabi-v7a`.
+   `arches` accepts `arm64-v8a`, `armeabi-v7a`, and `universal`. An
+   `arm64-v8a` entry automatically retries as universal only when its ARM64
+   build cannot be produced.
 
 2. **Describe where to download the app** in `apps/<store>/<app_name>.json`.
    Stores are tried in order: APKMirror, Aptoide, Uptodown, APKPure. A store

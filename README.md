@@ -28,8 +28,8 @@ Choose one or more target architectures in `arch-config.json`:
 ```
 
 Add store definitions under `apps/` for the download providers you want to use.
-The builder tries APKMirror, Aptoide, GitHub, Codeberg, Uptodown, APKPure, and
-APKCombo in that order when the corresponding definition is available.
+The builder tries APKMirror, Aptoide, Uptodown, and APKPure in that order when
+the corresponding definition is available.
 
 Add one source definition at `sources/your-source.json`. A Morphe source needs
 the Morphe CLI and the patch bundle release:

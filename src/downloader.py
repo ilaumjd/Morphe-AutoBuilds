@@ -1,6 +1,5 @@
 import json
 import logging
-import time
 from pathlib import Path
 from src import (
     utils,
@@ -9,8 +8,6 @@ from src import (
     uptodown,
     aptoide,
     apkmirror,
-    github,
-    apkcombo,
 )
 
 
@@ -49,11 +46,6 @@ def download_required(source: str) -> tuple[list[Path], str]:
     with source_path.open() as json_file:
         repos_info = json.load(json_file)
 
-    # Handle bundle format
-    if isinstance(repos_info, dict) and "bundle_url" in repos_info:
-        return download_from_bundle(repos_info)
-    
-    # Handle old list format
     name = repos_info[0]["name"]
     downloaded_files = []
 
@@ -83,56 +75,6 @@ def download_required(source: str) -> tuple[list[Path], str]:
 
     return downloaded_files, name
 
-def download_from_bundle(bundle_info: dict) -> tuple[list[Path], str]:
-    """Download resources from a bundle URL"""
-    bundle_url = bundle_info["bundle_url"]
-    name = bundle_info.get("name", "bundle-patches")
-    
-    logging.info(f"Downloading bundle from {bundle_url}")
-    
-    # Download the bundle JSON
-    with session.get(bundle_url) as res:
-        res.raise_for_status()
-        bundle_data = res.json()
-    
-    downloaded_files = []
-    
-    # Check API version and structure
-    if "patches" in bundle_data:
-        # API v4 format
-        patches = bundle_data.get("patches", [])
-        integrations = bundle_data.get("integrations", [])
-        
-        # Download patches (JAR files)
-        for patch in patches:
-            if "url" in patch:
-                filepath = download_resource(patch["url"])
-                downloaded_files.append(filepath)
-                logging.info(f"Downloaded patch: {patch.get('name', 'unknown')}")
-        
-        # Download integrations (APK files)
-        for integration in integrations:
-            if "url" in integration:
-                filepath = download_resource(integration["url"])
-                downloaded_files.append(filepath)
-                logging.info(f"Downloaded integration: {integration.get('name', 'unknown')}")
-    
-    # Also download CLI (still needed) - try ReVanced CLI first
-    try:
-        cli_release = utils.detect_github_release("revanced", "revanced-cli", "latest")
-        for asset in cli_release["assets"]:
-            if asset["name"].endswith(".asc"):
-                continue
-            if asset["name"].endswith(".jar") and "cli" in asset["name"].lower():
-                filepath = download_resource(asset["browser_download_url"])
-                downloaded_files.append(filepath)
-                logging.info("Downloaded ReVanced CLI")
-                break
-    except Exception as e:
-        logging.warning(f"Could not download ReVanced CLI: {e}")
-    
-    return downloaded_files, name
-
 def download_platform(
     app_name: str,
     platform: str,
@@ -149,7 +91,7 @@ def download_platform(
                 config = json.load(json_file)
         else:
             # Fallback: search other platform config directories for this app
-            for other_platform in ["apkmirror", "uptodown", "apkpure", "aptoide", "github", "apkcombo"]:
+            for other_platform in ["apkmirror", "uptodown", "apkpure", "aptoide"]:
                 if other_platform == platform:
                     continue
                 other_path = Path("apps") / other_platform / f"{app_name}.json"
@@ -253,24 +195,6 @@ def download_apkmirror(
 ) -> tuple[Path | None, str | None, list[str]]:
     return download_platform(app_name, "apkmirror", cli, patches, arch, override_version)
 
-def download_github(
-    app_name: str,
-    cli: str,
-    patches: str,
-    arch: str = None,
-    override_version: str = None,
-) -> tuple[Path | None, str | None, list[str]]:
-    return download_platform(app_name, "github", cli, patches, arch, override_version)
-
-def download_codeberg(
-    app_name: str,
-    cli: str,
-    patches: str,
-    arch: str = None,
-    override_version: str = None,
-) -> tuple[Path | None, str | None, list[str]]:
-    return download_platform(app_name, "codeberg", cli, patches, arch, override_version)
-
 def download_apkpure(
     app_name: str,
     cli: str,
@@ -297,29 +221,3 @@ def download_uptodown(
     override_version: str = None,
 ) -> tuple[Path | None, str | None, list[str]]:
     return download_platform(app_name, "uptodown", cli, patches, arch, override_version)
-
-def download_apkcombo(
-    app_name: str,
-    cli: str,
-    patches: str,
-    arch: str = None,
-    override_version: str = None,
-) -> tuple[Path | None, str | None, list[str]]:
-    return download_platform(app_name, "apkcombo", cli, patches, arch, override_version)
-
-def download_apkeditor() -> Path:
-    max_retries = 3
-    for attempt in range(max_retries):
-        try:
-            release = utils.detect_github_release("REAndroid", "APKEditor", "latest")
-
-            for asset in release["assets"]:
-                if asset["name"].startswith("APKEditor") and asset["name"].endswith(".jar"):
-                    return download_resource(asset["browser_download_url"])
-
-            raise RuntimeError("APKEditor .jar file not found in the latest release")
-        except Exception as e:
-            if attempt == max_retries - 1:
-                raise RuntimeError(f"Failed to download APKEditor after {max_retries} attempts: {e}")
-            logging.warning(f"APKEditor download attempt {attempt + 1} failed: {e}. Retrying...")
-            time.sleep(2)  # Wait 2 seconds before retry

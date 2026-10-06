@@ -4,10 +4,10 @@ __pycache__/
 *.xapk
 *.jar
 *.mpp
-dist/
-original-apks/
+apks/
 release-notes.md
 .patch-state.json
 .previous-patch-state.json
 build-results.json
+download-results.json
 .env

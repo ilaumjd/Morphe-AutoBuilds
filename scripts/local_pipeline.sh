@@ -22,10 +22,12 @@ if [ "$should_build" != true ]; then
   exit 0
 fi
 
-rm -rf dist build-results.json .patch-state.json release-notes.md
+# apks/original and apks/patched are permanent and never cleaned here.
+rm -rf build-results.json download-results.json .patch-state.json release-notes.md
 set +e
 BUILD_DATE=$(date -u +%Y%m%d) \
 SOURCES_TO_BUILD="$sources_to_build" \
+BUILD_RESULTS_PATH=download-results.json \
 python -m src download
 download_status=$?
 BUILD_DATE=$(date -u +%Y%m%d) \
@@ -43,13 +45,23 @@ if [ -f build-results.json ]; then
     --results build-results.json
 fi
 
-shopt -s nullglob
-apks=(dist/*.apk)
+# Publish only the APKs patched in this run; apks/patched keeps older builds.
+mapfile -t apks < <(python - <<'PY'
+import json, os
+try:
+    built = json.load(open("build-results.json"))["built"]
+except (OSError, ValueError, KeyError):
+    built = []
+for path in built:
+    if path.endswith(".apk") and os.path.isfile(path):
+        print(path)
+PY
+)
 if [ "${#apks[@]}" -gt 0 ]; then
   cp "$candidate_state" .patch-state.json
   {
     printf 'Curated build generated on %s UTC.\n\n' "$(date -u +'%Y-%m-%d %H:%M')"
-    for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk#dist/}"; done
+    for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk##*/}"; done
   } > release-notes.md
 
   if gh release view latest >/dev/null 2>&1; then

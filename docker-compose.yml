@@ -4,7 +4,8 @@ services:
     environment:
       GH_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
       GITHUB_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
-      APK_CACHE_DIR: /workspace/original-apks
+      ORIGINAL_APKS_DIR: /workspace/apks/original
+      PATCHED_APKS_DIR: /workspace/apks/patched
       TRAWL_URL: http://trawl:8191
     volumes:
       - ./:/workspace

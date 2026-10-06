@@ -7,6 +7,9 @@ import shutil
 import zipfile
 from pathlib import Path
 from src import utils, session
+from src.paths import ORIGINAL_APKS_DIR
+
+ORIGINAL_SUFFIXES = {".apk", ".apks", ".apkm", ".xapk"}
 
 
 # Download stores, in the order they are tried.
@@ -46,22 +49,26 @@ def download_resource(url: str, name: str = None) -> Path:
 
 def cached_apk(app_name: str, version: str, arch: str) -> Path | None:
     """Copy a cached original APK into the working directory, if available."""
-    cache_dir = Path(os.getenv("APK_CACHE_DIR", "original-apks"))
+    cache_dir = ORIGINAL_APKS_DIR
     safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{app_name}-{version}-{arch}")
-    for cached in cache_dir.glob(f"{safe_key}.*"):
+    for cached in sorted(cache_dir.glob(f"{safe_key}.*")):
+        if cached.suffix.lower() not in ORIGINAL_SUFFIXES:
+            continue
         if zipfile.is_zipfile(cached):
             destination = Path(cached.name)
             shutil.copy2(cached, destination)
             logging.info(f"Using cached original APK: {cached}")
             return destination
-        cached.unlink(missing_ok=True)
+        # Originals are never deleted by the pipeline; a bad file is skipped
+        # (and replaced only if the same name is downloaded again).
+        logging.warning(f"Ignoring unreadable cached original APK: {cached}")
     return None
 
 
 def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Path:
     """Download a base APK once and reuse it from the persistent local cache.
 
-    ``original-apks/`` is deliberately the default so local builds keep their
+    ``apks/original/`` is deliberately the default so local builds keep their
     original, unmodified downloads without requiring an environment variable.
     The cache is copied into the working directory because patching mutates its
     input file.
@@ -70,11 +77,11 @@ def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Pat
     if cached:
         return cached
 
-    cache_dir = Path(os.getenv("APK_CACHE_DIR", "original-apks"))
+    cache_dir = ORIGINAL_APKS_DIR
     safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{app_name}-{version}-{arch}")
     cache_dir.mkdir(parents=True, exist_ok=True)
     downloaded = download_resource(url)
-    if downloaded.suffix.lower() in {".apk", ".apkm", ".apks", ".xapk"}:
+    if downloaded.suffix.lower() in ORIGINAL_SUFFIXES:
         cached = cache_dir / f"{safe_key}{downloaded.suffix.lower()}"
         shutil.copy2(downloaded, cached)
         logging.info(f"Saved original APK: {cached}")

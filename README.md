@@ -88,16 +88,27 @@ python -m src                                     # download and patch every ent
 APP_NAME=your-app ARCH=arm64-v8a python -m src download  # one app / arch
 ```
 
-Signed APKs are written to `dist/`. Their filenames include the UTC build date,
-for example `your-app-universal-your-source-v1.2.3-20261006.apk`.
+## APK folders
 
-Original APKs are saved in `original-apks/` and reused by later builds of the
-same app, version, and architecture. The folder is ignored by Git. `python -m
-src patch` never downloads a base APK; it only uses this cache. To use a
-specific direct download in the download stage instead of querying an app
-store, add a pinned
-`version` and `download_url` to that app's store configuration, or use a
-one-off `APK_URL` environment variable:
+All APKs live under `apks/` (ignored by Git):
+
+```text
+apks/
+  original/   stock APKs (.apk, .apks, .apkm, .xapk), named <app>-<version>-<arch>.<ext>
+  patched/    signed patched builds, named <app>-<arch>-<source>-v<version>-<UTC date>.apk
+```
+
+The pipeline never deletes anything in either folder. Original APKs are reused
+by later builds of the same app, version, and architecture, and `python -m src
+patch` never downloads a base APK; it only uses `apks/original/`. Patched
+builds accumulate, and only the APKs built in the current run are published to
+the release (a rebuild on the same day overwrites that day's file of the same
+name). Override the locations with `APKS_DIR`, `ORIGINAL_APKS_DIR` or
+`PATCHED_APKS_DIR`.
+
+To fetch an original from a specific direct link instead of querying an app
+store, add a pinned `version` and `download_url` to that app's store
+configuration, or use a one-off `APK_URL` environment variable:
 
 ```bash
 APP_NAME=your-app SOURCE=your-source ARCH=arm64-v8a \
@@ -107,7 +118,7 @@ APK_URL='https://example.com/your-app.apk' python -m src download
 ## Local Void Linux runner
 
 `docker-compose.yml` runs the pipeline in a persistent container and keeps base
-APK downloads in the local `original-apks/` folder. It checks for patch updates on
+APK downloads and patched builds in the local `apks/` folder. It checks for patch updates on
 startup and every day at 06:00 UTC, then publishes successful builds to the
 `latest` GitHub release.
 

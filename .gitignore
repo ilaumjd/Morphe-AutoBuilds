@@ -1,2 +1,7 @@
 __pycache__/
 NUL
+*.apk
+*.jar
+*.mpp
+tools/
+release-notes.md

@@ -1,3 +1,0 @@
-+ Spoof features
-+ Enable DCIM folders backup control
-+ GmsCore support

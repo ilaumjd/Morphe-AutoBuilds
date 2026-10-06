@@ -26,9 +26,14 @@ rm -rf dist build-results.json .patch-state.json release-notes.md
 set +e
 BUILD_DATE=$(date -u +%Y%m%d) \
 SOURCES_TO_BUILD="$sources_to_build" \
+python -m src download
+download_status=$?
+BUILD_DATE=$(date -u +%Y%m%d) \
+SOURCES_TO_BUILD="$sources_to_build" \
 BUILD_RESULTS_PATH=build-results.json \
-python -m src
-build_status=$?
+python -m src patch
+patch_status=$?
+build_status=$((download_status || patch_status))
 set -e
 
 if [ -f build-results.json ]; then

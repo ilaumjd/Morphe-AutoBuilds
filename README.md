@@ -1,9 +1,11 @@
 # Morphe AutoBuilds
 
 Personal, curated Android patch builds using [Morphe](https://github.com/MorpheApp).
-GitHub Actions builds every entry in `patch-config.json` daily and publishes the
-signed APKs to the `latest` release when a patch bundle changes. Run the workflow
-with **force** enabled to rebuild on demand.
+A local runner builds every entry in `patch-config.json` daily and publishes the
+signed APKs to the `latest` release when a patch bundle changes. The GitHub
+Actions workflow is disabled (`.github/workflows/patch.yml.disabled`); rename it
+back to `patch.yml` to re-enable it. Rebuild on demand with
+`docker-compose run --rm -e FORCE_BUILD=1 builder once`.
 
 ## Available builds
 
@@ -73,25 +75,39 @@ to track and update the build.
 
 ## Build and release
 
-Run **Build curated APKs** from the Actions tab, or wait for the daily run at
-06:00 UTC. Successful builds replace the `latest` release; the run is marked
-failed if any entry could not be built.
+The local runner (see below) builds daily at 06:00 UTC. Successful builds replace
+the `latest` release; the run fails if any entry could not be built.
 
 Local build (needs Python 3.11+, Java 21 and Android build-tools for `apksigner`):
 
 ```bash
 pip install -r requirements.txt
-python -m src                                    # every entry
-APP_NAME=your-app ARCH=arm64-v8a python -m src  # one app / arch
+python -m src download                            # download/cache every original APK
+python -m src patch                               # patch only APKs already in the cache
+python -m src                                     # download and patch every entry
+APP_NAME=your-app ARCH=arm64-v8a python -m src download  # one app / arch
 ```
 
 Signed APKs are written to `dist/`. Their filenames include the UTC build date,
 for example `your-app-universal-your-source-v1.2.3-20261006.apk`.
 
+Original APKs are saved in `original-apks/` and reused by later builds of the
+same app, version, and architecture. The folder is ignored by Git. `python -m
+src patch` never downloads a base APK; it only uses this cache. To use a
+specific direct download in the download stage instead of querying an app
+store, add a pinned
+`version` and `download_url` to that app's store configuration, or use a
+one-off `APK_URL` environment variable:
+
+```bash
+APP_NAME=your-app SOURCE=your-source ARCH=arm64-v8a \
+APK_URL='https://example.com/your-app.apk' python -m src download
+```
+
 ## Local Void Linux runner
 
 `docker-compose.yml` runs the pipeline in a persistent container and keeps base
-APK downloads in the named `apk-cache` volume. It checks for patch updates on
+APK downloads in the local `original-apks/` folder. It checks for patch updates on
 startup and every day at 06:00 UTC, then publishes successful builds to the
 `latest` GitHub release.
 

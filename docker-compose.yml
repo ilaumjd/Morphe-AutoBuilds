@@ -4,11 +4,10 @@ services:
     environment:
       GH_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
       GITHUB_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
-      APK_CACHE_DIR: /data/apk-cache
+      APK_CACHE_DIR: /workspace/original-apks
       TRAWL_URL: http://trawl:8191
     volumes:
       - ./:/workspace
-      - apk-cache:/data/apk-cache
       - build-state:/data/state
       - morphe-data:/workspace/morphe-data
     depends_on:
@@ -21,6 +20,5 @@ services:
     restart: unless-stopped
 
 volumes:
-  apk-cache:
   build-state:
   morphe-data:

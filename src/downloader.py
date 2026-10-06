@@ -44,24 +44,40 @@ def download_resource(url: str, name: str = None) -> Path:
     return filepath
 
 
-def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Path:
-    """Download a base APK once and reuse it from the persistent local cache."""
-    cache_root = os.getenv("APK_CACHE_DIR")
+def cached_apk(app_name: str, version: str, arch: str) -> Path | None:
+    """Copy a cached original APK into the working directory, if available."""
+    cache_dir = Path(os.getenv("APK_CACHE_DIR", "original-apks"))
     safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{app_name}-{version}-{arch}")
-    if cache_root:
-        cache_dir = Path(cache_root)
-        cache_dir.mkdir(parents=True, exist_ok=True)
-        for cached in cache_dir.glob(f"{safe_key}.*"):
-            if zipfile.is_zipfile(cached):
-                destination = Path(cached.name)
-                shutil.copy2(cached, destination)
-                logging.info(f"Using cached base APK: {cached.name}")
-                return destination
-            cached.unlink(missing_ok=True)
+    for cached in cache_dir.glob(f"{safe_key}.*"):
+        if zipfile.is_zipfile(cached):
+            destination = Path(cached.name)
+            shutil.copy2(cached, destination)
+            logging.info(f"Using cached original APK: {cached}")
+            return destination
+        cached.unlink(missing_ok=True)
+    return None
 
+
+def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Path:
+    """Download a base APK once and reuse it from the persistent local cache.
+
+    ``original-apks/`` is deliberately the default so local builds keep their
+    original, unmodified downloads without requiring an environment variable.
+    The cache is copied into the working directory because patching mutates its
+    input file.
+    """
+    cached = cached_apk(app_name, version, arch)
+    if cached:
+        return cached
+
+    cache_dir = Path(os.getenv("APK_CACHE_DIR", "original-apks"))
+    safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", f"{app_name}-{version}-{arch}")
+    cache_dir.mkdir(parents=True, exist_ok=True)
     downloaded = download_resource(url)
-    if cache_root and downloaded.suffix.lower() in {".apk", ".apkm", ".apks", ".xapk"}:
-        shutil.copy2(downloaded, Path(cache_root) / f"{safe_key}{downloaded.suffix.lower()}")
+    if downloaded.suffix.lower() in {".apk", ".apkm", ".apks", ".xapk"}:
+        cached = cache_dir / f"{safe_key}{downloaded.suffix.lower()}"
+        shutil.copy2(downloaded, cached)
+        logging.info(f"Saved original APK: {cached}")
     return downloaded
 
 def download_required(source: str) -> tuple[list[Path], str]:
@@ -100,6 +116,7 @@ def download_platform(
     patches: str,
     arch: str = None,
     override_version: str = None,
+    cached_only: bool = False,
 ) -> tuple[Path | None, str | None, list[str]]:
     try:
         config_path = Path("apps") / platform / f"{app_name}.json"
@@ -125,7 +142,8 @@ def download_platform(
                                 "arch": other_cfg.get("arch", "universal"),
                                 "type": other_cfg.get("type", "APK"),
                                 "dpi": other_cfg.get("dpi", "nodpi"),
-                                "org": other_cfg.get("org", app_name)
+                                "org": other_cfg.get("org", app_name),
+                                "download_url": other_cfg.get("download_url"),
                             }
                             logging.info(f"Synthesized {platform} config for {app_name} from {other_platform}")
                             break
@@ -142,6 +160,26 @@ def download_platform(
             config['arch'] = arch or "universal"
 
         platform_module = importlib.import_module(f"src.{platform}")
+
+        # A direct link is useful when a store blocks automated scraping or
+        # when an operator has obtained a known-good original APK manually.
+        # APK_URL is a one-off override; download_url persists with the app
+        # configuration and takes priority for that app.
+        direct_url = config.get("download_url") or os.getenv("APK_URL")
+        if direct_url:
+            version = override_version or (config.get("version") or "").strip()
+            if not version:
+                raise ValueError(
+                    f"A direct APK URL for {app_name} requires a pinned version in its config"
+                )
+            cached = cached_apk(app_name, version, arch or "universal")
+            if cached:
+                return cached, version, [version]
+            if cached_only:
+                raise FileNotFoundError(
+                    f"Original APK is not cached: {app_name} v{version} ({arch or 'universal'})"
+                )
+            return download_cached_apk(direct_url, app_name, version, arch or "universal"), version, [version]
 
         # Candidate versions (highest -> lowest):
         # - If config pins a version: only try that.
@@ -180,6 +218,14 @@ def download_platform(
         last_error: Exception | None = None
         for version in candidates:
             if not version:
+                continue
+            if cached_only:
+                cached = cached_apk(app_name, version, arch or "universal")
+                if cached:
+                    return cached, version, candidates
+                last_error = FileNotFoundError(
+                    f"Original APK is not cached: {app_name} v{version} ({arch or 'universal'})"
+                )
                 continue
             download_link = platform_module.get_download_link(version, app_name, config)
             if not download_link:

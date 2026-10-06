@@ -5,6 +5,7 @@ __pycache__/
 *.jar
 *.mpp
 dist/
+original-apks/
 release-notes.md
 .patch-state.json
 .previous-patch-state.json

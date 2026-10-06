@@ -8,6 +8,7 @@ from sys import exit
 from pathlib import Path
 from os import getenv
 import subprocess
+import sys
 from src import (
     utils,
     downloader
@@ -145,10 +146,12 @@ def sign_apk(unsigned_apk: Path, signed_apk: Path) -> None:
         "--in", str(unsigned_apk), "--out", str(signed_apk)
     ])
 
-def download_apk(app_name: str, cli: Path, patches: Path, arch: str):
-    """Try each store in order; return (apk, version, candidates, platform)."""
+def download_apk(app_name: str, cli: Path, patches: Path, arch: str, cached_only: bool = False):
+    """Return a usable original APK, optionally using the local cache only."""
     for platform in downloader.PLATFORMS:
-        apk_path, ver, cands = downloader.download_platform(app_name, platform, str(cli), str(patches), arch)
+        apk_path, ver, cands = downloader.download_platform(
+            app_name, platform, str(cli), str(patches), arch, cached_only=cached_only
+        )
         if not apk_path:
             continue
         # A corrupt download must never reach the patcher: repair it, and if
@@ -160,11 +163,27 @@ def download_apk(app_name: str, cli: Path, patches: Path, arch: str):
         return apk_path, ver, cands, platform
     return None, None, [], None
 
-def run_build(app_name: str, source: str, arch: str, cli: Path, patches: Path, name: str) -> str | None:
-    """Download, patch and sign one app for one architecture."""
-    input_apk, version, candidates, platform = download_apk(app_name, cli, patches, arch)
+def download_original(app_name: str, cli: Path, patches: Path, arch: str) -> bool:
+    """Fetch and validate an original APK, leaving its persistent cache intact."""
+    input_apk, version, _, _ = download_apk(app_name, cli, patches, arch)
     if input_apk is None or not version:
-        logging.error(f"❌ Failed to download APK for {app_name} from every store")
+        return False
+    input_apk.unlink(missing_ok=True)
+    logging.info(f"✅ Original APK cached: {app_name} v{version} ({arch})")
+    return True
+
+
+def run_build(
+    app_name: str, source: str, arch: str, cli: Path, patches: Path, name: str,
+    cached_only: bool = False,
+) -> str | None:
+    """Patch and sign one app. The patch stage can be restricted to cached originals."""
+    input_apk, version, candidates, platform = download_apk(
+        app_name, cli, patches, arch, cached_only=cached_only
+    )
+    if input_apk is None or not version:
+        location = "cache" if cached_only else "stores"
+        logging.error(f"❌ Failed to obtain APK for {app_name} from {location}")
         return None
 
     # Try the downloaded version first, then older compatible versions from
@@ -181,7 +200,8 @@ def run_build(app_name: str, source: str, arch: str, cli: Path, patches: Path, n
                 f"Retrying {app_name}/{source}/{arch} with older version {ver} due to patch failure..."
             )
             input_apk, _, _ = downloader.download_platform(
-                app_name, platform, str(cli), str(patches), arch, override_version=ver
+                app_name, platform, str(cli), str(patches), arch,
+                override_version=ver, cached_only=cached_only,
             )
             if input_apk is None:
                 continue
@@ -254,7 +274,10 @@ def load_entries() -> list[dict]:
         entries = [{**e, "arches": [arch]} for e in entries]
     return entries
 
-def main():
+def main(stage: str = "all"):
+    if stage not in {"all", "download", "patch"}:
+        logging.error("Usage: python -m src [download|patch]")
+        exit(2)
     entries = load_entries()
     if not entries or any(not e.get("source") for e in entries):
         logging.error("No matching entries in patch-config.json (set SOURCE for ad-hoc builds)")
@@ -268,7 +291,8 @@ def main():
         app_name, source = entry["app_name"], entry["source"]
         for arch in entry.get("arches") or ["universal"]:
             label = f"{app_name}/{source}/{arch}"
-            logging.info(f"🔨 Building {label}...")
+            action = "Downloading" if stage == "download" else "Patching"
+            logging.info(f"🔨 {action} {label}...")
             try:
                 if source not in tools:
                     download_files, name = downloader.download_required(source)
@@ -281,21 +305,32 @@ def main():
                     logging.info(f"✅ Using patches: {patches.name}")
                     tools[source] = (cli, patches, name)
 
-                apk_path = run_build(app_name, source, arch, *tools[source])
+                if stage == "download":
+                    apk_path = download_original(app_name, *tools[source][:2], arch)
+                else:
+                    apk_path = run_build(
+                        app_name, source, arch, *tools[source], cached_only=stage == "patch"
+                    )
             except Exception as e:
                 logging.error(f"❌ {label} failed: {e}")
                 apk_path = None
 
             if not apk_path and arch == "arm64-v8a":
                 fallback_label = f"{app_name}/{source}/universal"
-                logging.warning(f"ARM64 build unavailable; retrying {fallback_label}...")
+                logging.warning(f"ARM64 {action.lower()} unavailable; retrying {fallback_label}...")
                 try:
-                    apk_path = run_build(app_name, source, "universal", *tools[source])
+                    if stage == "download":
+                        apk_path = download_original(app_name, *tools[source][:2], "universal")
+                    else:
+                        apk_path = run_build(
+                            app_name, source, "universal", *tools[source], cached_only=stage == "patch"
+                        )
                 except Exception as e:
                     logging.error(f"❌ {fallback_label} failed: {e}")
 
             source_results.setdefault(source, []).append(bool(apk_path))
-            (built if apk_path else failed).append(apk_path or label)
+            result = label if stage == "download" else apk_path
+            (built if apk_path else failed).append(result or label)
 
     successful_sources = [
         source for source, results in source_results.items() if all(results)
@@ -312,12 +347,13 @@ def main():
         + "\n"
     )
 
-    print(f"\n🎯 Built {len(built)} APK(s):")
-    for apk in built:
-        print(f"  📱 {apk}")
+    noun = "original APK(s)" if stage == "download" else "APK(s)"
+    print(f"\n🎯 Completed {len(built)} {noun}:")
+    for result in built:
+        print(f"  📱 {result}")
     if failed:
         print(f"❌ Failed: {', '.join(failed)}")
         exit(1)
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1] if len(sys.argv) == 2 else "all")

@@ -5,6 +5,15 @@ GitHub Actions builds every entry in `patch-config.json` daily and publishes the
 signed APKs to the `latest` release when a patch bundle changes. Run the workflow
 with **force** enabled to rebuild on demand.
 
+## Available builds
+
+| App | Architecture | Obtainium |
+| --- | --- | --- |
+| TikTok (HushFeed) | universal | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.zhiliaoapp.musically%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522TikTok%2520%2528HushFeed%2529%2522%257D) |
+
+The link opens Obtainium with this release source prefilled; confirm the import
+to track and update the build.
+
 ## Add an app
 
 1. **Add a build entry** in `patch-config.json`:

@@ -327,9 +327,8 @@ def is_apk_signed(apk_path: Path) -> bool:
 
     Checks for v1 (JAR signing) META-INF/*.RSA|*.DSA|*.EC entries first,
     then looks for an APK Signing Block containing a v2/v3 signature
-    scheme id. Mirrors occasionally serve unsigned or stripped APKs;
-    the patcher rejects those, so detect them here and let the caller
-    try the next download source instead.
+    scheme id. This only reports whether a signature is present;
+    ``ensure_usable_apk`` treats its absence as a warning, not a failure.
     """
     if not apk_path or not apk_path.exists():
         return False
@@ -386,21 +385,25 @@ def is_apk_signed(apk_path: Path) -> bool:
 
 
 def ensure_usable_apk(apk_path: Path, app_name: str, version: str) -> Path | None:
-    """Return ``apk_path`` if it passes integrity and signature checks.
+    """Return ``apk_path`` if it passes the integrity check.
 
     Otherwise attempt a ``zip -FF`` repair and re-check.  A file that is
-    still corrupt afterwards, or that carries no Android signature, is
-    deleted and ``None`` is returned so the caller can try another
-    download source instead of feeding a broken APK to the patcher
-    (which crashes with an obscure NPE or rejects unsigned input).
+    still corrupt afterwards is deleted and ``None`` is returned so the
+    caller can try another download source instead of feeding a broken APK
+    to the patcher (which crashes with an obscure NPE).
+
+    A missing Android signature is only a warning: some stores serve intact
+    APKs without a v1/v2/v3 signature, the Morphe patcher accepts them and
+    signs its own output, and the check never verified who signed the file
+    anyway.
     """
     def _good(path: Path) -> bool:
         if not check_apk_integrity(path):
             return False
         if not is_apk_signed(path):
             logging.warning(
-                f"APK {path.name} has no Android signature; discarding download")
-            return False
+                f"APK {path.name} carries no v1/v2/v3 signature; accepting it because "
+                "it is intact and the patcher re-signs its output")
         return True
 
     if _good(apk_path):
@@ -433,7 +436,7 @@ def ensure_usable_apk(apk_path: Path, app_name: str, version: str) -> Path | Non
     apk_path.unlink(missing_ok=True)
     fixed_apk.rename(apk_path)
     if _good(apk_path):
-        logging.info("APK repaired successfully and passes integrity and signature checks")
+        logging.info("APK repaired successfully and passes the integrity check")
         return apk_path
 
     logging.warning("APK still fails checks after zip -FF repair; discarding download")

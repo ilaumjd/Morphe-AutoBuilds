@@ -23,7 +23,7 @@ if [ "$should_build" != true ]; then
 fi
 
 # apks/original and apks/patched are permanent and never cleaned here.
-rm -rf build-results.json download-results.json .patch-state.json release-notes.md
+rm -rf build-results.json download-results.json .patch-state.json patch-state.json release-notes.md
 set +e
 BUILD_DATE=$(date -u +%Y%m%d) \
 SOURCES_TO_BUILD="$sources_to_build" \
@@ -58,17 +58,20 @@ for path in built:
 PY
 )
 if [ "${#apks[@]}" -gt 0 ]; then
-  cp "$candidate_state" .patch-state.json
+  # GitHub strips a leading dot from asset names (".patch-state.json" becomes
+  # "default.patch-state.json"), which breaks --clobber, so use a plain name.
+  release_state=patch-state.json
+  cp "$candidate_state" "$release_state"
   {
     printf 'Curated build generated on %s UTC.\n\n' "$(date -u +'%Y-%m-%d %H:%M')"
     for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk##*/}"; done
   } > release-notes.md
 
   if gh release view latest >/dev/null 2>&1; then
-    gh release upload latest "${apks[@]}" .patch-state.json --clobber
+    gh release upload latest "${apks[@]}" "$release_state" --clobber
     gh release edit latest --title "Latest build" --notes-file release-notes.md
   else
-    gh release create latest "${apks[@]}" .patch-state.json --title "Latest build" --notes-file release-notes.md --latest
+    gh release create latest "${apks[@]}" "$release_state" --title "Latest build" --notes-file release-notes.md --latest
   fi
   cp "$candidate_state" "$previous_state"
 fi

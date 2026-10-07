@@ -49,11 +49,6 @@
       "app_name": "reddit",
       "source": "adobo",
       "arches": ["arm64-v8a"]
-    },
-    {
-      "app_name": "strava",
-      "source": "devanced",
-      "arches": ["arm64-v8a"]
     }
   ]
 }

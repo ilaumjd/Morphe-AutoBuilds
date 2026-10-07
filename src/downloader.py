@@ -19,7 +19,9 @@ def platforms_for(app_name: str) -> list[str]:
     config (its vendor publishes the APKs there), otherwise the app stores."""
     if (Path("apps") / "github" / f"{app_name}.json").exists():
         return ["github"]
-    return PLATFORMS
+    # APKCombo and APKFab are last resorts used only by apps that opt in with a config.
+    extra = [p for p in ("apkcombo", "apkfab") if (Path("apps") / p / f"{app_name}.json").exists()]
+    return PLATFORMS + extra
 
 
 class UnknownPatchCompatibilityError(ValueError):

@@ -72,6 +72,12 @@
       "title": "Termius",
       "source": "rushiranpise",
       "arches": ["arm64-v8a"]
+    },
+    {
+      "app_name": "homeworkout",
+      "title": "Home Workout",
+      "source": "rushiranpise",
+      "arches": ["arm64-v8a"]
     }
   ]
 }

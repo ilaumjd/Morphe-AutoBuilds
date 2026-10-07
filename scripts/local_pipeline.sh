@@ -66,15 +66,19 @@ if [ "${#apks[@]}" -gt 0 ]; then
     printf 'Curated build generated on %s UTC.\n\n' "$(date -u +'%Y-%m-%d %H:%M')"
     for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk##*/}"; done
   } > release-notes.md
+  release_title="Latest build"
 
   if gh release view latest >/dev/null 2>&1; then
     gh release upload latest "${apks[@]}" "$release_state" --clobber
-    gh release edit latest --title "Latest build" --notes-file release-notes.md
+    # "gh release edit" needs gh >= 2.5 and the container's gh is older, so use the API.
+    release_id=$(gh api "repos/{owner}/{repo}/releases/tags/latest" --jq .id)
+    gh api -X PATCH "repos/{owner}/{repo}/releases/$release_id" \
+      -f name="$release_title" -F body=@release-notes.md > /dev/null
   else
-    gh release create latest "${apks[@]}" "$release_state" --title "Latest build" --notes-file release-notes.md --latest
+    gh release create latest "${apks[@]}" "$release_state" --title "$release_title" --notes-file release-notes.md
   fi
   # Keep only the newest build of each app on the release.
-  python scripts/prune_release_assets.py --tag latest \
+  python scripts/prune_release_assets.py --tag latest --built "${apks[@]##*/}" \
     || echo "WARNING: could not remove older builds from the release"
   cp "$candidate_state" "$previous_state"
 fi

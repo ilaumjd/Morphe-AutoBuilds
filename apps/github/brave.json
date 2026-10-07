@@ -1,0 +1,9 @@
+{
+  "package": "com.brave.browser",
+  "repo": "brave/brave-browser",
+  "tag": "v{version}",
+  "assets": {
+    "arm64-v8a": "BraveMonoarm64.apk",
+    "armeabi-v7a": "BraveMonoarm.apk"
+  }
+}

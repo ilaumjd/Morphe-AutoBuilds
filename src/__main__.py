@@ -157,7 +157,7 @@ def download_apk(
     failed: it requests a universal variant rather than the arch in the app
     config. An entry that is explicitly universal leaves it False.
     """
-    for platform in downloader.PLATFORMS:
+    for platform in downloader.platforms_for(app_name):
         apk_path, ver, cands = downloader.download_platform(
             app_name, platform, str(cli), str(patches), arch,
             cached_only=cached_only, universal_fallback=universal_fallback,

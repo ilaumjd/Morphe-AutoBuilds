@@ -1,3 +1,4 @@
+import hashlib
 import json
 import logging
 import importlib
@@ -11,6 +12,14 @@ from src.paths import ORIGINAL_APKS_DIR, ORIGINAL_SUFFIXES, original_candidates,
 
 # Download stores, in the order they are tried.
 PLATFORMS = ["apkmirror", "aptoide", "uptodown", "apkpure"]
+
+
+def platforms_for(app_name: str) -> list[str]:
+    """Stores to try for an app: GitHub alone when the app has an apps/github
+    config (its vendor publishes the APKs there), otherwise the app stores."""
+    if (Path("apps") / "github" / f"{app_name}.json").exists():
+        return ["github"]
+    return PLATFORMS
 
 
 class UnknownPatchCompatibilityError(ValueError):
@@ -61,7 +70,9 @@ def cached_apk(app_name: str, version: str, arch: str) -> Path | None:
     return None
 
 
-def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Path:
+def download_cached_apk(
+    url: str, app_name: str, version: str, arch: str, sha256: str | None = None
+) -> Path:
     """Download a base APK once and reuse it from the persistent local cache.
 
     ``apks/original/`` is deliberately the default so local builds keep their
@@ -76,6 +87,17 @@ def download_cached_apk(url: str, app_name: str, version: str, arch: str) -> Pat
     cache_dir = ORIGINAL_APKS_DIR
     cache_dir.mkdir(parents=True, exist_ok=True)
     downloaded = download_resource(url)
+    if sha256:
+        digest = hashlib.sha256()
+        with downloaded.open("rb") as f:
+            for chunk in iter(lambda: f.read(1 << 20), b""):
+                digest.update(chunk)
+        if digest.hexdigest() != sha256.lower():
+            downloaded.unlink(missing_ok=True)
+            raise ValueError(
+                f"SHA-256 mismatch for {downloaded.name}: expected {sha256}, got {digest.hexdigest()}"
+            )
+        logging.info(f"SHA-256 verified for {downloaded.name}")
     if downloaded.suffix.lower() in ORIGINAL_SUFFIXES:
         cached = cache_dir / f"{original_stem(app_name, arch, version)}{downloaded.suffix.lower()}"
         shutil.copy2(downloaded, cached)
@@ -250,7 +272,11 @@ def download_platform(
                 last_error = ValueError(f"No download link found for {app_name} version {version}")
                 continue
             try:
-                filepath = download_cached_apk(download_link, app_name, version, arch or "universal")
+                checksum_of = getattr(platform_module, "get_checksum", None)
+                checksum = checksum_of(version, app_name, config) if checksum_of else None
+                filepath = download_cached_apk(
+                    download_link, app_name, version, arch or "universal", sha256=checksum
+                )
                 return filepath, version, candidates
             except Exception as e:
                 last_error = e

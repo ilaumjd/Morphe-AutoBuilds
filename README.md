@@ -55,9 +55,9 @@ installed as `org.ungoogled.android.apps.maps`, next to the stock app.
    the patched app installs under a different package id than the store app.
 
 2. **Describe where to download the app** in `apps/<store>/<app_name>.json`.
-   Stores are tried in order: APKMirror, Aptoide, Uptodown, APKPure. A store
-   without its own file reuses the `package`/`version` from another store's
-   file. Example:
+   Stores are tried in order: APKMirror, Aptoide, Uptodown, APKPure; an app with an
+   `apps/github/<app>.json` uses GitHub only. A store without its own file reuses
+   the `package`/`version` from another store's file. Example:
 
    ```json
    {
@@ -79,6 +79,12 @@ installed as `org.ungoogled.android.apps.maps`, next to the stock app.
    - **APKPure** (`apps/apkpure/<app>.json`) needs the app's slug and package from
      its `apkpure.com/<name>/<package>` URL: `{ "name": "<name>", "package": "<package>" }`.
      Pages are rendered through trawl.
+   - **GitHub** (`apps/github/<app>.json`) is for apps whose vendor publishes APKs on
+     GitHub releases: `{ "package": "com.brave.browser", "repo": "brave/brave-browser",
+     "tag": "v{version}", "assets": { "arm64-v8a": "BraveMonoarm64.apk" } }`. `tag` is the
+     release tag of a version and `assets` maps an architecture to the asset name; an
+     architecture without an asset is not served instead of falling back to another ABI.
+     A published `<asset>.sha256` is verified before the APK is stored.
    - **APKMirror** `release_prefix` is the release slug without the version, e.g.
      `microsoft-swiftkey-ai-keyboard` for `…-9-13-13-5-release`. Set
      `"match_version_code": true` when the app has many same-version builds (e.g.

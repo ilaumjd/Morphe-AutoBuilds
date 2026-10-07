@@ -1,5 +1,5 @@
 [
-  { "name": "franticg33k" },
+  { "name": "franticg33k", "title": "FranticG33k" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
   { "user": "franticg33k", "repo": "morphe-patches", "tag": "latest" }
 ]

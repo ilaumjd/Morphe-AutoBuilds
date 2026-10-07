@@ -1,5 +1,5 @@
 [
-  { "name": "adobo" },
+  { "name": "adobo", "title": "Adobo" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
   { "user": "jkennethcarino", "repo": "adobo", "tag": "latest" }
 ]

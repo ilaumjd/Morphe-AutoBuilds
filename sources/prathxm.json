@@ -1,5 +1,5 @@
 [
-  { "name": "prathxm" },
+  { "name": "prathxm", "title": "Prathxm" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
   { "user": "PrathxmOp", "repo": "Prathxm-Patches", "tag": "latest" }
 ]

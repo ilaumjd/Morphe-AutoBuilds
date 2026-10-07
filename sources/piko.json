@@ -1,5 +1,5 @@
 [
-  { "name": "piko" },
+  { "name": "piko", "title": "Piko" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
   { "user": "crimera", "repo": "piko", "tag": "latest" }
 ]

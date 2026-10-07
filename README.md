@@ -9,18 +9,20 @@ back to `patch.yml` to re-enable it. Rebuild on demand with
 
 ## Available builds
 
+<!-- available-builds:start -->
 | App | Patches | Architecture | Obtainium |
 | --- | --- | --- | --- |
 | TikTok | [HushFeed](https://github.com/SysAdminDoc/hushfeed) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.zhiliaoapp.musically%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522TikTok%2520%2528HushFeed%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Etiktok-%255C%2522%257D%2522%257D) |
-| Instagram | [Piko](https://github.com/crimera/piko) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.instagram.android%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Instagram%2520%2528Piko%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Einstagram-%255C%2522%257D%2522%257D) |
-| X | [Piko](https://github.com/crimera/piko) | universal | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.twitter.android%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522X%2520%2528Piko%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Ex-%255C%2522%257D%2522%257D) |
-| Reddit | [Adobo](https://github.com/jkennethcarino/adobo) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.reddit.frontpage%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Reddit%2520%2528Adobo%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Ereddit-%255C%2522%257D%2522%257D) |
-| Brave | [Kveld](https://github.com/kveld9/kveld-morphe-patches) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.brave.browser%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Brave%2520%2528Kveld%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Ebrave-%255C%2522%257D%2522%257D) |
 | Chess.com | [Prathxm](https://github.com/PrathxmOp/Prathxm-Patches) | universal | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.chess%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Chess.com%2520%2528Prathxm%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Echess-%255C%2522%257D%2522%257D) |
+| X | [Piko](https://github.com/crimera/piko) | universal | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.twitter.android%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522X%2520%2528Piko%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Ex-%255C%2522%257D%2522%257D) |
+| Instagram | [Piko](https://github.com/crimera/piko) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.instagram.android%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Instagram%2520%2528Piko%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Einstagram-%255C%2522%257D%2522%257D) |
+| Brave | [Kveld](https://github.com/kveld9/kveld-morphe-patches) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.brave.browser%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Brave%2520%2528Kveld%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Ebrave-%255C%2522%257D%2522%257D) |
 | Google Maps | [BearInMindCat](https://github.com/bearinmindcat/morphe-patches) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522org.ungoogled.android.apps.maps%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Google%2520Maps%2520%2528BearInMindCat%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Emaps-%255C%2522%257D%2522%257D) |
-| SwiftKey | [Hoomans](https://github.com/arandomhooman/hoomans-morphe-patches) | universal | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.touchtype.swiftkey%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522SwiftKey%2520%2528Hoomans%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Eswiftkey-%255C%2522%257D%2522%257D) |
 | JellyWatch | [FranticG33k](https://github.com/franticg33k/morphe-patches) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.jellywatch.app%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522JellyWatch%2520%2528FranticG33k%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Ejellywatch-%255C%2522%257D%2522%257D) |
+| SwiftKey | [Hoomans](https://github.com/arandomhooman/hoomans-morphe-patches) | universal | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.touchtype.swiftkey%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522SwiftKey%2520%2528Hoomans%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Eswiftkey-%255C%2522%257D%2522%257D) |
 | Quranify | [HxReborn](https://github.com/hxreborn/morphe-patches) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.mchutov.Quranify%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Quranify%2520%2528HxReborn%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Equranify-%255C%2522%257D%2522%257D) |
+| Reddit | [Adobo](https://github.com/jkennethcarino/adobo) | arm64-v8a | [Add to Obtainium](https://apps.obtainium.imranr.dev/redirect?r=obtainium%3A%2F%2Fapp%2F%257B%2522id%2522%253A%2522com.reddit.frontpage%2522%252C%2522url%2522%253A%2522https%253A%252F%252Fgithub.com%252Filaumjd%252FMorphe-AutoBuilds%2522%252C%2522author%2522%253A%2522ilaumjd%2522%252C%2522name%2522%253A%2522Reddit%2520%2528Adobo%2529%2522%252C%2522additionalSettings%2522%253A%2522%257B%255C%2522apkFilterRegEx%255C%2522%253A%255C%2522%255Ereddit-%255C%2522%257D%2522%257D) |
+<!-- available-builds:end -->
 
 All builds are published to the single [`latest` release](https://github.com/ilaumjd/Morphe-AutoBuilds/releases/tag/latest),
 which keeps only the newest build of each app. Each Obtainium link opens
@@ -38,7 +40,7 @@ installed as `org.ungoogled.android.apps.maps`, next to the stock app.
    ```json
    {
      "patch_list": [
-       { "app_name": "your-app", "source": "your-source", "arches": ["arm64-v8a"] }
+       { "app_name": "your-app", "source": "your-source", "title": "Your App", "arches": ["arm64-v8a"] }
      ]
    }
    ```
@@ -46,6 +48,9 @@ installed as `org.ungoogled.android.apps.maps`, next to the stock app.
    `arches` accepts `arm64-v8a`, `armeabi-v7a`, and `universal`. An
    `arm64-v8a` entry automatically retries as universal only when its ARM64
    build cannot be produced.
+
+   `title` is the display name used in the README table. Add `"package"` only when
+   the patched app installs under a different package id than the store app.
 
 2. **Describe where to download the app** in `apps/<store>/<app_name>.json`.
    Stores are tried in order: APKMirror, Aptoide, Uptodown, APKPure. A store
@@ -99,6 +104,10 @@ installed as `org.ungoogled.android.apps.maps`, next to the stock app.
    ```
 
 ## Build and release
+
+_The "Available builds" table above is generated: after changing `patch-config.json` or
+publishing a build, run `docker-compose run --rm --no-deps --entrypoint python builder scripts/generate_readme_table.py`
+(add `--check` to only verify) and commit the result._
 
 The local runner (see below) builds daily at 06:00 UTC. Successful builds replace
 the `latest` release; the run fails if any entry could not be built.

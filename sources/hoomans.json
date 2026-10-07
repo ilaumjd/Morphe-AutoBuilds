@@ -1,5 +1,5 @@
 [
-  { "name": "hoomans" },
+  { "name": "hoomans", "title": "Hoomans" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
   { "user": "arandomhooman", "repo": "hoomans-morphe-patches", "tag": "latest" }
 ]

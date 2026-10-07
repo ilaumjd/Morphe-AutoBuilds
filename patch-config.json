@@ -60,6 +60,18 @@
       "title": "CapCut",
       "source": "riky",
       "arches": ["arm64-v8a"]
+    },
+    {
+      "app_name": "stickerly",
+      "title": "Sticker.ly",
+      "source": "rushiranpise",
+      "arches": ["arm64-v8a"]
+    },
+    {
+      "app_name": "termius",
+      "title": "Termius",
+      "source": "rushiranpise",
+      "arches": ["arm64-v8a"]
     }
   ]
 }

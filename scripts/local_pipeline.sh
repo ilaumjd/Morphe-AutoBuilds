@@ -73,6 +73,9 @@ if [ "${#apks[@]}" -gt 0 ]; then
   else
     gh release create latest "${apks[@]}" "$release_state" --title "Latest build" --notes-file release-notes.md --latest
   fi
+  # Keep only the newest build of each app on the release.
+  python scripts/prune_release_assets.py --tag latest \
+    || echo "WARNING: could not remove older builds from the release"
   cp "$candidate_state" "$previous_state"
 fi
 

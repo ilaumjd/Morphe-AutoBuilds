@@ -87,6 +87,9 @@ to track and update the build.
 
 The local runner (see below) builds daily at 06:00 UTC. Successful builds replace
 the `latest` release; the run fails if any entry could not be built.
+The release only keeps the newest build of each app: after an upload, older
+builds of the same app and source are removed from it (`scripts/prune_release_assets.py`;
+run it with `--dry-run` to preview). Local copies in `apks/patched/` are never deleted.
 
 Local build (needs Python 3.11+, Java 21 and Android build-tools for `apksigner`):
 

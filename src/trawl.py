@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import requests
 
@@ -16,10 +16,16 @@ class ScrapedResponse:
     cookies: dict[str, str]
     user_agent: str | None = None
     status_code: int = 200
+    headers: dict[str, str] = field(default_factory=dict)
 
     @property
     def text(self) -> str:
         return self.content.decode("utf-8", errors="replace")
+
+    def raise_for_status(self) -> None:
+        """Mirror requests' API so callers can treat a rendered page like a response."""
+        if self.status_code >= 400:
+            raise RuntimeError(f"HTTP {self.status_code} for {self.url}")
 
 
 def fetch(url: str, referer: str | None = None) -> ScrapedResponse | None:

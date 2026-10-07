@@ -228,10 +228,11 @@ def download_platform(
         for version in candidates:
             if not version:
                 continue
+            # Prefer an original that is already stored: no store lookup needed.
+            cached = cached_apk(app_name, version, arch or "universal")
+            if cached:
+                return cached, version, candidates
             if cached_only:
-                cached = cached_apk(app_name, version, arch or "universal")
-                if cached:
-                    return cached, version, candidates
                 last_error = FileNotFoundError(
                     f"Original APK is not cached: {app_name} v{version} ({arch or 'universal'})"
                 )

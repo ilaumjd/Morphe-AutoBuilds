@@ -1,7 +1,16 @@
 services:
   builder:
     build: .
+    # Run as your user so everything the runner writes under ./ (apks/, the
+    # downloaded CLI and patch bundles) is owned by you, not root. Override
+    # PUID/PGID in .env if your ids differ from 1000.
+    user: "${PUID:-1000}:${PGID:-1000}"
+    # tini as PID 1: forwards stop signals so "docker stop" exits cleanly
+    # instead of waiting out the timeout and ending in SIGKILL (exit 137).
+    init: true
+    stop_grace_period: 30s
     environment:
+      HOME: /tmp
       GH_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
       GITHUB_TOKEN: ${GH_TOKEN:?Set GH_TOKEN in .env}
       ORIGINAL_APKS_DIR: /workspace/apks/original

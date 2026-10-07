@@ -131,6 +131,9 @@ write repository releases:
 GH_TOKEN=github_pat_...
 ```
 
+The runner runs as user 1000:1000 so the files it writes (`apks/`, downloaded
+tools) belong to you. If your ids differ, add `PUID=` and `PGID=` lines to `.env`.
+
 Start the runner with `docker-compose up -d --build`. To run it once manually,
 use `docker-compose run --rm builder once`.
 

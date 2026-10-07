@@ -54,6 +54,12 @@
       "title": "LinkedIn",
       "source": "michii",
       "arches": ["universal"]
+    },
+    {
+      "app_name": "capcut",
+      "title": "CapCut",
+      "source": "riky",
+      "arches": ["arm64-v8a"]
     }
   ]
 }

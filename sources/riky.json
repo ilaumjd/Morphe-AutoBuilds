@@ -1,0 +1,5 @@
+[
+  { "name": "riky", "title": "Riky" },
+  { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
+  { "user": "riky-dev", "repo": "morphe-patches", "tag": "latest" }
+]

@@ -233,7 +233,7 @@ def _scrape_release_url_from_soup(soup, version: str, config: dict, build_number
                     continue
                 # Check version pattern properly bounded
                 ver_pattern = re.escape(current_ver_dash)
-                if re.search(rf'(?:^|[/-]){ver_pattern}(?:[/-]|$)', href):
+                if re.search(rf'(?:^|/|[^0-9]-){ver_pattern}(?:[/-]|$)', href):
                     priority = 0 if href.rstrip('/').endswith('-release') else 1
                     candidates.append((priority, link['href']))
             

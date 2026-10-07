@@ -48,6 +48,12 @@
       "title": "Reddit",
       "source": "adobo",
       "arches": ["arm64-v8a"]
+    },
+    {
+      "app_name": "linkedin",
+      "title": "LinkedIn",
+      "source": "michii",
+      "arches": ["universal"]
     }
   ]
 }

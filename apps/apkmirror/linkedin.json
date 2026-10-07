@@ -1,0 +1,10 @@
+{
+  "org": "linkedin",
+  "name": "linkedin-linkedin",
+  "release_prefix": "linkedin-community-network",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "120-640dpi",
+  "package": "com.linkedin.android",
+  "version": ""
+}

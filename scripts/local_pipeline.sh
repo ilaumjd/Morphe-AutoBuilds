@@ -66,7 +66,9 @@ if [ "${#apks[@]}" -gt 0 ]; then
     printf 'Curated build generated on %s UTC.\n\n' "$(date -u +'%Y-%m-%d %H:%M')"
     for apk in "${apks[@]}"; do printf -- '- `%s`\n' "${apk##*/}"; done
   } > release-notes.md
-  release_title="Latest build"
+  # Obtainium takes the release title as the version (releaseTitleAsVersion), so a new
+  # title on every publish is what makes it prompt for an update.
+  release_title="Build $(date -u +'%Y-%m-%d %H:%M') UTC"
 
   if gh release view latest >/dev/null 2>&1; then
     gh release upload latest "${apks[@]}" "$release_state" --clobber

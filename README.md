@@ -52,6 +52,14 @@ to track and update the build.
    `version` pins the app version. Leave it out to build the newest version
    the patch bundle declares compatible.
 
+   Store-specific notes:
+
+   - **APKPure** (`apps/apkpure/<app>.json`) needs the app's slug and package from
+     its `apkpure.com/<name>/<package>` URL: `{ "name": "<name>", "package": "<package>" }`.
+     Pages are rendered through trawl.
+   - **APKMirror** `release_prefix` is the release slug without the version, e.g.
+     `microsoft-swiftkey-ai-keyboard` for `…-9-13-13-5-release`.
+
 3. **Define the patch source** in `sources/<source>.json`: a display name
    (used in the APK filename), the Morphe CLI release and the patch bundle
    release. `tag` is `latest`, `prerelease` or an explicit tag.

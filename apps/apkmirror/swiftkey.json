@@ -1,0 +1,10 @@
+{
+  "org": "swiftkey",
+  "name": "swiftkey-keyboard",
+  "release_prefix": "microsoft-swiftkey-ai-keyboard",
+  "type": "APK",
+  "arch": "universal",
+  "dpi": "nodpi",
+  "package": "com.touchtype.swiftkey",
+  "version": "9.13.13.5"
+}

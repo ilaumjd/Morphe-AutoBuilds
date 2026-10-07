@@ -1,56 +1,67 @@
+"""APKPure store.
+
+apkpure.com sits behind Cloudflare, so pages are rendered through trawl when it
+is available and fetched directly otherwise. A download page exposes its file
+(usually an XAPK bundle) as ``a#download_link`` and the version it shows in
+``span.info-sdk``.
+"""
 import logging
 
-from src import session 
 from bs4 import BeautifulSoup
 
-# Define a standard browser User-Agent to avoid 403 Forbidden errors
+from src import session, trawl
+
+BASE_URL = "https://apkpure.com"
+
 HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     'Accept-Language': 'en-US,en;q=0.9',
-    'Referer': 'https://apkpure.net/'
+    'Referer': f'{BASE_URL}/',
 }
 
-def get_latest_version(app_name: str, config: str) -> str: 
-    url = f"https://apkpure.net/{config['name']}/{config['package']}/versions"
 
+def _page(url: str) -> BeautifulSoup | None:
+    """Return the parsed page, via trawl first and a plain request as fallback."""
+    rendered = trawl.fetch(url)
+    if rendered:
+        return BeautifulSoup(rendered.content, "html.parser")
     try:
-        # Added headers to the request
-        response = session.get(url, headers=HEADERS)
+        response = session.get(url, headers=HEADERS, timeout=30)
         response.raise_for_status()
-        
-        content_size = len(response.content)
-        logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
-        
-        soup = BeautifulSoup(response.content, "html.parser")
-        version_info = soup.find('div', class_='ver-top-down')
-
-        if version_info and 'data-dt-version' in version_info.attrs:
-            return version_info['data-dt-version']
-            
     except Exception as e:
-        logging.error(f"Failed to fetch latest version for {app_name}: {e}")
-        
+        logging.warning(f"APKPure request failed for {url}: {e}")
+        return None
+    return BeautifulSoup(response.content, "html.parser")
+
+
+def get_latest_version(app_name: str, config: dict) -> str | None:
+    soup = _page(f"{BASE_URL}/{config['name']}/{config['package']}/versions")
+    if soup:
+        latest = soup.find('div', class_='ver-top-down')
+        if latest and latest.get('data-dt-version'):
+            return latest['data-dt-version']
+    logging.error(f"Failed to fetch latest version for {app_name} from APKPure")
     return None
 
-def get_download_link(version: str, app_name: str, config: str) -> str:
-    # APKPure often uses a specific structure for download pages
-    url = f"https://apkpure.net/{config['name']}/{config['package']}/download/{version}"
 
-    try:
-        response = session.get(url, headers=HEADERS)
-        response.raise_for_status()
-        
-        content_size = len(response.content)
-        logging.info(f"URL:{response.url} [{content_size}/{content_size}] -> \"-\" [1]")
-        
-        soup = BeautifulSoup(response.content, "html.parser")
-        
-        # Look for the download link; APKPure sometimes uses 'download_link' or 'fast-download'
-        download_link = soup.find('a', id='download_link')
-        if download_link:
-            return download_link['href']
-            
-    except Exception as e:
-        logging.error(f"Failed to fetch download link for {app_name} v{version}: {e}")
-    
+def get_download_link(version: str, app_name: str, config: dict) -> str | None:
+    soup = _page(f"{BASE_URL}/{config['name']}/{config['package']}/download/{version}")
+    if not soup:
+        return None
+
+    # An unknown version must not silently turn into whatever APKPure shows
+    # instead: the page has to be for exactly the requested version.
+    shown = soup.find('span', class_='info-sdk')
+    shown_version = shown.get_text(strip=True) if shown else ""
+    if shown_version.lower() != version.strip().lower():
+        logging.warning(
+            f"APKPure shows {shown_version or 'no version'} instead of {version} for {app_name}"
+        )
+        return None
+
+    link = soup.find('a', id='download_link')
+    href = link.get('href', '') if link else ''
+    if href.startswith('http'):
+        return href
+    logging.warning(f"APKPure has no download link for {app_name} v{version}")
     return None

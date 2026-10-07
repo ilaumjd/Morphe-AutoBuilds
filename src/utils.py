@@ -131,6 +131,21 @@ def normalize_version(version: str) -> list[int]:
     
     return normalized
 
+# Version codes the patch bundle was written against, per package/version/ABI,
+# as printed by `list-versions` (e.g. "[versionCodes: ARM64_V8A=384510827]").
+_VERSION_CODES: dict[tuple[str, str, str], dict[str, str]] = {}
+_ABI_NAMES = {"ARM64_V8A": "arm64-v8a", "ARMEABI_V7A": "armeabi-v7a", "X86_64": "x86_64", "X86": "x86"}
+
+
+def get_version_code(package_name: str, patches: str, version: str, arch: str) -> Optional[str]:
+    """Version code the patches target for ``version`` on ``arch``, if the CLI listed one.
+
+    Only known after ``get_supported_versions`` ran for the same package and
+    patch bundle.
+    """
+    return _VERSION_CODES.get((package_name, str(patches), version), {}).get(arch)
+
+
 def get_supported_versions(package_name: str, cli: str, patches: str) -> Optional[list[str]]:
     """Return the app versions the patch bundle declares compatibility with.
 
@@ -185,6 +200,13 @@ def get_supported_versions(package_name: str, cli: str, patches: str) -> Optiona
                 # Validate it looks like a version (starts with a digit)
                 if not version[0].isdigit():
                     continue
+                codes = re.search(r"\[versionCodes:\s*([^\]]+)\]", line)
+                if codes:
+                    pairs = (item.split("=", 1) for item in codes.group(1).split(",") if "=" in item)
+                    _VERSION_CODES[(package_name, str(patches), version)] = {
+                        _ABI_NAMES.get(abi.strip().upper(), abi.strip().lower()): code.strip()
+                        for abi, code in pairs
+                    }
                 # Check if next parts are "build XXX"
                 if len(parts) >= 3 and parts[1].lower() == 'build':
                     version = f"{parts[0]} build {parts[2]}"

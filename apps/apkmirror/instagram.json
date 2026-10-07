@@ -4,6 +4,7 @@
   "type": "BUNDLE",
   "arch": "universal",
   "dpi": "120-640dpi",
+  "match_version_code": true,
   "package": "com.instagram.android",
   "version": ""
 }

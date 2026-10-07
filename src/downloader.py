@@ -237,6 +237,14 @@ def download_platform(
                     f"Original APK is not cached: {app_name} v{version} ({arch or 'universal'})"
                 )
                 continue
+            if config.get('match_version_code'):
+                # Apps whose store variants differ per build (e.g. Instagram): pick the
+                # exact build the patches were written against.
+                code = utils.get_version_code(config["package"], patches, version, config.get("arch", ""))
+                if code:
+                    config['version_code'] = code
+                else:
+                    config.pop('version_code', None)
             download_link = platform_module.get_download_link(version, app_name, config)
             if not download_link:
                 last_error = ValueError(f"No download link found for {app_name} version {version}")

@@ -58,7 +58,9 @@ to track and update the build.
      its `apkpure.com/<name>/<package>` URL: `{ "name": "<name>", "package": "<package>" }`.
      Pages are rendered through trawl.
    - **APKMirror** `release_prefix` is the release slug without the version, e.g.
-     `microsoft-swiftkey-ai-keyboard` for `…-9-13-13-5-release`.
+     `microsoft-swiftkey-ai-keyboard` for `…-9-13-13-5-release`. Set
+     `"match_version_code": true` when the app has many same-version builds (e.g.
+     Instagram) to pick the build whose version code the patches list.
 
 3. **Define the patch source** in `sources/<source>.json`: a display name
    (used in the APK filename), the Morphe CLI release and the patch bundle

@@ -539,6 +539,10 @@ def get_download_link(version: str, app_name: str, config: dict, arch: str = Non
         elif t_arch not in r:
             return False
 
+        want_code = str(config.get('version_code') or '')
+        if want_code and want_code not in r:
+            return False
+
         c_dpi = (config.get('dpi') or 'nodpi').lower()
         if c_dpi in ['nodpi', '120-640dpi', 'all', '']:
             # All DPIs acceptable for universal/nodpi/bundle

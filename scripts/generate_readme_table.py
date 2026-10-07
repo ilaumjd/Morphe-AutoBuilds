@@ -5,7 +5,9 @@ The table is built from ``patch-config.json`` (which apps, in that order), the
 ``sources/*.json`` files (patch repository and display name) and the assets on
 the GitHub release (which architecture is actually published). Each row gets an
 Obtainium import link that offers only that app's APK from the release (an APK
-filter, because all builds share one release) with version detection off and the release title as its version.
+filter, because all builds share one release) with version detection off and the date
+of that app's APK asset as its version, so Obtainium prompts for an update only when
+that app's file is re-uploaded.
 
 Optional metadata:
   patch-config.json entry   "title"    display name (default: the app name)
@@ -60,11 +62,17 @@ def source_info(source: str) -> tuple[str, str | None]:
 
 def obtainium_link(repo_url: str, owner: str, app: str, name: str, package: str) -> str:
     # Only this app's APK from the shared release. Every build is published under the
-    # same "latest" tag, so Obtainium cannot compare version numbers (no version
-    # detection); it uses the release title - a timestamp that changes on every
-    # publish - as the version, which is what makes it prompt for updates.
+    # same "latest" tag, so there is no version number to compare (no version detection).
+    # Instead the version is the date of this app's asset: with the asset-date option
+    # Obtainium takes the newest update time among the assets that pass the APK filter,
+    # so it changes only when this app's APK is re-uploaded.
     settings = json.dumps(
-        {"apkFilterRegEx": f"^{re.escape(app)}-", "versionDetection": False, "releaseTitleAsVersion": True},
+        {
+            "apkFilterRegEx": f"^{re.escape(app)}-",
+            "versionDetection": False,
+            "releaseDateAsVersion": True,
+            "useLatestAssetDateAsReleaseDate": True,
+        },
         separators=(",", ":"),
     )
     payload = {"id": package, "url": repo_url, "author": owner, "name": name, "additionalSettings": settings}

@@ -4,7 +4,8 @@
 The table is built from ``patch-config.json`` (which apps, in that order), the
 ``sources/*.json`` files (patch repository and display name) and the assets on
 the GitHub release (which architecture is actually published). Each row gets an
-Obtainium import link with an APK filter, because all builds share one release.
+Obtainium import link that offers only that app's APK from the release (an APK
+filter, because all builds share one release) with version detection turned off.
 
 Optional metadata:
   patch-config.json entry   "title"    display name (default: the app name)
@@ -58,7 +59,12 @@ def source_info(source: str) -> tuple[str, str | None]:
 
 
 def obtainium_link(repo_url: str, owner: str, app: str, name: str, package: str) -> str:
-    settings = json.dumps({"apkFilterRegEx": f"^{re.escape(app)}-"}, separators=(",", ":"))
+    # Only this app's APK from the shared release, and no version handling: every
+    # build is published under the same "latest" tag, so Obtainium must not compare
+    # versions (no version detection, no release-date or release-title versions).
+    settings = json.dumps(
+        {"apkFilterRegEx": f"^{re.escape(app)}-", "versionDetection": False}, separators=(",", ":")
+    )
     payload = {"id": package, "url": repo_url, "author": owner, "name": name, "additionalSettings": settings}
     inner = quote(json.dumps(payload, separators=(",", ":"), ensure_ascii=False), safe="")
     return "https://apps.obtainium.imranr.dev/redirect?r=" + quote("obtainium://app/" + inner, safe="")

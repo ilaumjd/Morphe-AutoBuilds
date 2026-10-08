@@ -5,8 +5,7 @@ The table is built from ``patch-config.json`` (which apps, sorted by display nam
 ``sources/*.json`` files (patch repository and display name) and the assets on
 the GitHub release (which architecture is actually published). Each row gets an
 Obtainium import link that offers only that app's APK from the release (an APK
-filter, because all builds share one release) with version detection off and no
-pseudo-version, so Obtainium just offers the APK on the release.
+filter, because all builds share one release) with no pseudo-version, so Obtainium just offers the APK on the release.
 
 Optional metadata:
   patch-config.json entry   "title"    display name (default: the app name)
@@ -20,15 +19,14 @@ The table is written between the ``<!-- available-builds:start -->`` and
 when the README is out of date instead of writing it. Needs the ``gh`` CLI and
 runs from a checkout of the repository.
 
-It also writes docs/index.html, a small GitHub Pages page that forwards to one
-obtainium://apps/ link importing every published app. Obtainium's own redirect
-page rejects the bulk form, and GitHub strips custom-scheme links from the README,
-so the README links to this page instead (enable Pages for the /docs folder).
+It also writes obtainium-apps.json, an import file with every published app (the same
+objects as the per-app links) for Obtainium's Import screen. Obtainium's redirect page
+rejects the bulk obtainium://apps/ form and GitHub strips custom-scheme links, so a
+file is the way to add all apps at once.
 """
 from __future__ import annotations
 
 import argparse
-import html
 import json
 import re
 import subprocess
@@ -38,7 +36,7 @@ from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 START, END = "<!-- available-builds:start -->", "<!-- available-builds:end -->"
-PAGE = ROOT / "docs" / "index.html"
+IMPORT_FILE = ROOT / "obtainium-apps.json"
 ASSET = re.compile(r"^(?P<app>[^-]+)-(?P<arch>arm64-v8a|armeabi-v7a|universal)-")
 
 
@@ -68,11 +66,12 @@ def source_info(source: str) -> tuple[str, str | None]:
 
 def obtainium_payload(repo_url: str, owner: str, app: str, name: str, package: str) -> dict:
     # Only this app's APK from the shared release. Every build is published under the
-    # same "latest" tag, so there is no version number to compare: version detection is
-    # off and no pseudo-version (release date or title) is used. Obtainium simply offers
-    # whatever APK is on the release.
+    # same "latest" tag, so there is no version number to compare. Leave version detection
+    # at Obtainium's default (turning it off makes Obtainium show a "pseudo version in use"
+    # warning) and use no pseudo-version; Obtainium simply offers whatever APK is on the
+    # release.
     settings = json.dumps(
-        {"apkFilterRegEx": f"^{re.escape(app)}-", "versionDetection": False},
+        {"apkFilterRegEx": f"^{re.escape(app)}-"},
         separators=(",", ":"),
     )
     return {"id": package, "url": repo_url, "author": owner, "name": name, "additionalSettings": settings}
@@ -84,39 +83,11 @@ def obtainium_link(payload: dict) -> str:
     return "https://apps.obtainium.imranr.dev/redirect?r=" + quote("obtainium://app/" + inner, safe="")
 
 
-def bulk_deep_link(payloads: list[dict]) -> str:
-    inner = quote(json.dumps(payloads, separators=(",", ":"), ensure_ascii=False), safe="")
-    return "obtainium://apps/" + inner
+def import_file_json(payloads: list[dict]) -> str:
+    """Obtainium import file: {"apps": [...]}, the same app objects as the per-app links.
 
-
-def render_page(payloads: list[dict]) -> str:
-    """The GitHub Pages page: opens Obtainium with every app, with a manual button."""
-    deep = html.escape(bulk_deep_link(payloads), quote=True)
-    items = "\n".join(f"      <li>{html.escape(p['name'])}</li>" for p in payloads)
-    return f"""<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Add all apps to Obtainium</title>
-  <style>
-    body {{ font: 16px/1.5 system-ui, sans-serif; max-width: 34rem; margin: 3rem auto; padding: 0 1rem; }}
-    a.button {{ display: inline-block; padding: .7rem 1.2rem; border-radius: .6rem; background: #5b4bd5; color: #fff; text-decoration: none; }}
-    small {{ color: #666; }}
-  </style>
-</head>
-<body>
-  <h1>Add all apps to Obtainium</h1>
-  <p>This opens Obtainium with {len(payloads)} apps from this repository's release. Obtainium asks you to confirm before it adds anything.</p>
-  <p><a class="button" id="open" href="{deep}">Open Obtainium</a></p>
-  <p><small>Nothing happened? Install <a href="https://github.com/ImranR98/Obtainium/releases/latest">Obtainium</a> first, then tap the button again.</small></p>
-  <ul>
-{items}
-  </ul>
-  <script>setTimeout(function () {{ location.href = document.getElementById("open").href; }}, 800);</script>
-</body>
-</html>
-"""
+    Obtainium's Import accepts this wrapper (it needs no schema version or settings)."""
+    return json.dumps({"apps": payloads}, indent=2, ensure_ascii=False) + "\n"
 
 
 def build_table(tag: str) -> tuple[str, list[dict], str]:
@@ -166,22 +137,25 @@ def main() -> int:
     _, tail = rest.split(END, 1)
     table, payloads, repo_url = build_table(args.tag)
     owner, repo = repo_url.rstrip("/").split("/")[-2:]
-    pages_url = f"https://{owner}.github.io/{repo}/"
-    bulk = f"\n[Add all {len(payloads)} apps to Obtainium at once]({pages_url})\n" if payloads else ""
+    file_url = f"https://raw.githubusercontent.com/{owner}/{repo}/main/{IMPORT_FILE.name}"
+    bulk = (
+        f"\nAll {len(payloads)} apps at once: download [{IMPORT_FILE.name}]({file_url}) and import it in "
+        "Obtainium (Import/Export → Import).\n"
+        if payloads else ""
+    )
     updated = f"{head}{START}\n{table}{bulk}{END}{tail}"
-    page = render_page(payloads)
+    import_file = import_file_json(payloads)
 
-    current_page = PAGE.read_text() if PAGE.exists() else None
-    if updated == readme and page == current_page:
-        print("README.md and docs/index.html are up to date.")
+    current_file = IMPORT_FILE.read_text() if IMPORT_FILE.exists() else None
+    if updated == readme and import_file == current_file:
+        print("README.md and obtainium-apps.json are up to date.")
         return 0
     if args.check:
-        print("README.md table or docs/index.html is out of date; run scripts/generate_readme_table.py", file=sys.stderr)
+        print("README.md table or obtainium-apps.json is out of date; run scripts/generate_readme_table.py", file=sys.stderr)
         return 1
     readme_path.write_text(updated)
-    PAGE.parent.mkdir(exist_ok=True)
-    PAGE.write_text(page)
-    print("README.md and docs/index.html updated.")
+    IMPORT_FILE.write_text(import_file)
+    print("README.md and obtainium-apps.json updated.")
     return 0
 
 

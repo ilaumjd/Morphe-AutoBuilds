@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Regenerate the README "Available builds" table.
 
-The table is built from ``patch-config.json`` (which apps, in that order), the
+The table is built from ``patch-config.json`` (which apps, sorted by display name), the
 ``sources/*.json`` files (patch repository and display name) and the assets on
 the GitHub release (which architecture is actually published). Each row gets an
 Obtainium import link that offers only that app's APK from the release (an APK
@@ -92,7 +92,8 @@ def build_table(tag: str) -> str:
             published[match["app"]] = match["arch"]
 
     rows = ["| App | Patches | Architecture | Obtainium |", "| --- | --- | --- | --- |"]
-    for entry in config:
+    # Alphabetical by display name, whatever the build order in patch-config.json.
+    for entry in sorted(config, key=lambda e: (e.get("title") or e["app_name"]).casefold()):
         app, source = entry["app_name"], entry["source"]
         title = entry.get("title") or app
         source_title, patch_repo = source_info(source)

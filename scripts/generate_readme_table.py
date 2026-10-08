@@ -3,9 +3,10 @@
 
 The table is built from ``patch-config.json`` (which apps, sorted by display name), the
 ``sources/*.json`` files (patch repository and display name) and the assets on
-the GitHub release (which architecture is actually published). Each row gets an
-Obtainium import link that offers only that app's APK from the release (an APK
-filter, because all builds share one release) with no pseudo-version, so Obtainium just offers the APK on the release.
+the per-app GitHub releases (which architecture and version are published). Each row gets an
+Obtainium import link: it selects the app's own release by title, takes the
+release title ("<App> <version>") as the version and cuts the version number off
+its end, so Obtainium compares real versions.
 
 Optional metadata:
   patch-config.json entry   "title"    display name (default: the app name)
@@ -37,7 +38,10 @@ from urllib.parse import quote
 ROOT = Path(__file__).resolve().parent.parent
 START, END = "<!-- available-builds:start -->", "<!-- available-builds:end -->"
 IMPORT_FILE = ROOT / "obtainium-apps.json"
-ASSET = re.compile(r"^(?P<app>[^-]+)-(?P<arch>arm64-v8a|armeabi-v7a|universal)-")
+ASSET = re.compile(
+    r"^(?P<app>[^-]+)-(?P<arch>arm64-v8a|armeabi-v7a|universal)-(?P<source>[^-]+)"
+    r"-v(?P<version>.+)-(?P<date>\d{8})\.apk$"
+)
 
 
 def gh_json(path: str) -> dict:
@@ -64,14 +68,20 @@ def source_info(source: str) -> tuple[str, str | None]:
     return title, repo
 
 
-def obtainium_payload(repo_url: str, owner: str, app: str, name: str, package: str) -> dict:
-    # Only this app's APK from the shared release. Every build is published under the
-    # same "latest" tag, so there is no version number to compare. Leave version detection
-    # at Obtainium's default (turning it off makes Obtainium show a "pseudo version in use"
-    # warning) and use no pseudo-version; Obtainium simply offers whatever APK is on the
-    # release.
+def obtainium_payload(repo_url: str, owner: str, app: str, title: str, name: str, package: str) -> dict:
+    # Every app has its own release (tag = app name) titled "<title> <version>", so
+    # Obtainium picks the app's release by title, takes the release title as the version
+    # and cuts the version number off its end: a real version that it can compare with
+    # the installed one (no pseudo-version, version detection left at its default).
+    title_pattern = re.escape(title).replace("\\ ", " ")
     settings = json.dumps(
-        {"apkFilterRegEx": f"^{re.escape(app)}-"},
+        {
+            "apkFilterRegEx": f"^{re.escape(app)}-",
+            "filterReleaseTitlesByRegEx": f"^{title_pattern} ",
+            "releaseTitleAsVersion": True,
+            "versionExtractionRegEx": r"(\S+)$",
+            "matchGroupToUse": "$1",
+        },
         separators=(",", ":"),
     )
     return {"id": package, "url": repo_url, "author": owner, "name": name, "additionalSettings": settings}
@@ -90,20 +100,21 @@ def import_file_json(payloads: list[dict]) -> str:
     return json.dumps({"apps": payloads}, indent=2, ensure_ascii=False) + "\n"
 
 
-def build_table(tag: str) -> tuple[str, list[dict], str]:
+def build_table() -> tuple[str, list[dict], str]:
     """Return the table markdown, the Obtainium payloads of the published apps and the repo URL."""
     config = json.loads((ROOT / "patch-config.json").read_text())["patch_list"]
-    release = gh_json(f"repos/{{owner}}/{{repo}}/releases/tags/{tag}")
-    repo_url = re.sub(r"/releases/.*$", "", release["html_url"])
+    repo_url = gh_json("repos/{owner}/{repo}")["html_url"]
     owner = repo_url.rstrip("/").split("/")[-2]
-    published: dict[str, str] = {}
-    for asset in release.get("assets", []):
-        match = ASSET.match(asset["name"])
-        if match and asset["name"].endswith(".apk"):
-            published[match["app"]] = match["arch"]
+    # Each app has its own release; find the APK each one publishes.
+    published: dict[str, tuple[str, str, str]] = {}  # app -> (arch, version, release page)
+    for release in gh_json("repos/{owner}/{repo}/releases?per_page=100"):
+        for asset in release.get("assets", []):
+            match = ASSET.match(asset["name"])
+            if match and asset["name"].endswith(".apk"):
+                published[match["app"]] = (match["arch"], match["version"], release["html_url"])
 
     payloads: list[dict] = []
-    rows = ["| App | Patches | Architecture | Obtainium |", "| --- | --- | --- | --- |"]
+    rows = ["| App | Patches | Architecture | Release | Obtainium |", "| --- | --- | --- | --- | --- |"]
     # Alphabetical by display name, whatever the build order in patch-config.json.
     for entry in sorted(config, key=lambda e: (e.get("title") or e["app_name"]).casefold()):
         app, source = entry["app_name"], entry["source"]
@@ -113,18 +124,18 @@ def build_table(tag: str) -> tuple[str, list[dict], str]:
         package = entry.get("package") or store_package(app)
         if app not in published or not package:
             reason = "not published yet" if app not in published else "no package id"
-            rows.append(f"| {title} | {patches} | {reason} | |")
+            rows.append(f"| {title} | {patches} | {reason} | | |")
             continue
-        payload = obtainium_payload(repo_url, owner, app, f"{title} ({source_title})", package)
+        arch, version, release_url = published[app]
+        payload = obtainium_payload(repo_url, owner, app, title, f"{title} ({source_title})", package)
         payloads.append(payload)
         link = obtainium_link(payload)
-        rows.append(f"| {title} | {patches} | {published[app]} | [Add to Obtainium]({link}) |")
+        rows.append(f"| {title} | {patches} | {arch} | [{version}]({release_url}) | [Add to Obtainium]({link}) |")
     return "\n".join(rows) + "\n", payloads, repo_url
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--tag", default="latest", help="release tag to read (default: latest)")
     parser.add_argument("--check", action="store_true", help="exit 1 if README.md is out of date")
     args = parser.parse_args()
 
@@ -135,7 +146,7 @@ def main() -> int:
         return 2
     head, rest = readme.split(START, 1)
     _, tail = rest.split(END, 1)
-    table, payloads, repo_url = build_table(args.tag)
+    table, payloads, repo_url = build_table()
     owner, repo = repo_url.rstrip("/").split("/")[-2:]
     file_url = f"https://raw.githubusercontent.com/{owner}/{repo}/main/{IMPORT_FILE.name}"
     bulk = (

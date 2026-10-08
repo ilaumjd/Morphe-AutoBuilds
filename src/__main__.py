@@ -13,6 +13,7 @@ from src import (
     utils,
     downloader
 )
+from src import patchlog
 from src.paths import patched_apk
 
 KEYSTORE = {
@@ -62,6 +63,14 @@ def load_patch_rules(app_name: str, source: str) -> list[str]:
                         opts.append(f"-O{opt}")
             args.extend(["-e", name_opts, *opts])
     return args
+
+def patch_rule_lines(app_name: str, source: str) -> list[str]:
+    """The custom "+ enable" / "- disable" lines from patches/<app>-<source>.txt, for the report."""
+    path = Path("patches") / f"{app_name}-{source}.txt"
+    if not path.exists():
+        return []
+    return [line.strip() for line in path.read_text().splitlines() if line.strip().startswith(("+", "-"))]
+
 
 def find_tools(download_files: list[Path]) -> tuple[Path | None, Path | None]:
     """Pick the Morphe CLI jar and patch bundle from the downloaded files."""
@@ -240,7 +249,7 @@ def run_build(
         output_apk = Path(f"{app_name}-{arch}-patch-v{version}.apk")
 
         try:
-            utils.run_process([
+            patch_output = utils.run_process([
                 "java", "-jar", str(cli),
                 "patch", "--patches", str(patches),
                 "--out", str(output_apk), str(input_apk),
@@ -262,6 +271,10 @@ def run_build(
         sign_apk(output_apk, signed_apk)
         output_apk.unlink(missing_ok=True)
 
+        # Keep a record of what was applied and what was left off, to review later.
+        report = patchlog.parse(patch_output, patch_rule_lines(app_name, source))
+        patchlog.save(signed_apk, report)
+        print(f"📋 Patches for {signed_apk.name}: {patchlog.summary(report)}")
         print(f"✅ APK built: {signed_apk.name}")
         return str(signed_apk)
 

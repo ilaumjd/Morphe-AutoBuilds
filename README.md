@@ -130,8 +130,11 @@ The local runner (see below) builds daily at 06:00 UTC. Each successful build is
 published by `scripts/publish_releases.py` to the app's own release: the release is
 retagged `v<version>` (suffixed `-<app>` only if another app already uses that tag),
 renamed `<App> <version>`, and the APK replaces the previous one, so a release only holds
-the newest build. The patch state is kept on a prerelease tagged `state`, which Obtainium
-skips. The run fails if any entry could not be built.
+the newest build. Every build also records which patches it applied and which it left off
+(the CLI's own report, plus any custom `patches/<app>-<source>.txt` rules): it is saved next to
+the APK as `apks/patched/<apk>.patches.json`, printed in the run log, and added to the release
+notes under "Patches applied" and "Patches off". The patch state is kept on a prerelease
+tagged `state`, which Obtainium skips. The run fails if any entry could not be built.
 `scripts/prune_release_assets.py` (with `--dry-run` to preview) cleans up stray older
 builds by hand. Local copies in `apks/patched/` are never deleted.
 

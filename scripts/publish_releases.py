@@ -66,6 +66,13 @@ def titles(app: str, source: str) -> tuple[str, str]:
     return entry.get("title") or app, first.get("title") or first["name"]
 
 
+def patch_report_markdown(report: dict) -> str:
+    """Release-notes section from the report the build saved next to the APK."""
+    sys.path.insert(0, str(ROOT))
+    from src import patchlog
+    return patchlog.markdown(report)
+
+
 def sha256(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as f:
@@ -113,11 +120,16 @@ def publish_apk(apk: Path, dry: bool) -> None:
         f"{date[:4]}-{date[4:6]}-{date[6:]}.\n\n"
         "This release holds only the newest build of this app; it is replaced on every update."
     )
+    report_file = apk.with_suffix(".patches.json")
+    if report_file.exists():
+        body += "\n\n" + patch_report_markdown(json.loads(report_file.read_text()))
     releases = list_releases()
     tag = choose_tag(app, version, releases)
     mine = [r for r in releases if app_of(r) == app]
     print(f"{app}: {tag}  \"{release_title}\"  <-  {apk.name}")
     if dry:
+        if report_file.exists():
+            print(body)
         return
 
     if not mine:

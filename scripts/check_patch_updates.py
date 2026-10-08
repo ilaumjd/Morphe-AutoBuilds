@@ -83,12 +83,27 @@ def write_output(name: str, value: str) -> None:
         print(f"{name}={value}")
 
 
+def patch_rules(entry: dict) -> list[str] | None:
+    """Custom patch selection of an entry (patches/<app>-<source>.txt), or None without one."""
+    path = ROOT / "patches" / f"{entry['app_name']}-{entry['source']}.txt"
+    if not path.exists():
+        return None
+    return [line.strip() for line in path.read_text().splitlines() if line.strip().startswith(("+", "-"))]
+
+
 def entries_hash(entries: list[dict]) -> str:
-    """Hash of a source's build entries, ignoring display-only fields."""
-    build_entries = [
-        {key: value for key, value in entry.items() if key not in DISPLAY_ONLY_FIELDS}
-        for entry in entries
-    ]
+    """Hash of a source's build entries: ignores display-only fields, includes patch lists.
+
+    Editing a patches/<app>-<source>.txt file changes which patches the build applies, so
+    it must trigger a rebuild just like a config change.
+    """
+    build_entries = []
+    for entry in entries:
+        item = {key: value for key, value in entry.items() if key not in DISPLAY_ONLY_FIELDS}
+        rules = patch_rules(entry)
+        if rules is not None:
+            item["patch_rules"] = rules
+        build_entries.append(item)
     return hashlib.sha256(
         json.dumps(build_entries, sort_keys=True, separators=(",", ":")).encode()
     ).hexdigest()

@@ -1,0 +1,6 @@
++ Hide Reels in the feed
++ Hide the Reels tab
++ Clean up Reels
++ Turn off double tap to like
++ Hold a reel for 2x
++ Don't send reel watch history

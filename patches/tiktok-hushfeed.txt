@@ -1,0 +1,13 @@
++ Allow screenshots and Circle to Search
++ Advanced downloads
++ Allow Duet and Stitch
++ Skip the splash ad
++ Hide comment popup ads
++ Hide search suggestions
++ Disable telemetry
++ Block contact list access
++ Stop on-device AI profiling
++ Keep playing in the background
++ Hide already seen videos
++ Hide suggested accounts
++ Skip content warnings

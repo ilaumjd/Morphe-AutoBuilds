@@ -91,6 +91,12 @@
       "title": "Chessable",
       "source": "jcapretta",
       "arches": ["arm64-v8a"]
+    },
+    {
+      "app_name": "facebook",
+      "title": "Facebook",
+      "source": "hushfacebook",
+      "arches": ["arm64-v8a"]
     }
   ]
 }

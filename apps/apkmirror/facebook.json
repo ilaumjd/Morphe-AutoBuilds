@@ -1,0 +1,11 @@
+{
+  "org": "facebook-2",
+  "name": "facebook",
+  "release_prefix": "facebook",
+  "type": "BUNDLE",
+  "arch": "arm64-v8a",
+  "dpi": "320-640dpi",
+  "match_version_code": true,
+  "package": "com.facebook.katana",
+  "version": ""
+}

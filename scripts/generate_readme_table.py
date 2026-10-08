@@ -3,7 +3,7 @@
 
 The table is built from ``patch-config.json`` (which apps, sorted by display name), the
 ``sources/*.json`` files (patch repository and display name) and the assets on
-the GitHub release (which architecture is actually published). Below the table, one link imports all published apps at once. Each row gets an
+the GitHub release (which architecture is actually published). Each row gets an
 Obtainium import link that offers only that app's APK from the release (an APK
 filter, because all builds share one release) with version detection off and no
 pseudo-version, so Obtainium just offers the APK on the release.
@@ -59,7 +59,7 @@ def source_info(source: str) -> tuple[str, str | None]:
     return title, repo
 
 
-def obtainium_payload(repo_url: str, owner: str, app: str, name: str, package: str) -> dict:
+def obtainium_link(repo_url: str, owner: str, app: str, name: str, package: str) -> str:
     # Only this app's APK from the shared release. Every build is published under the
     # same "latest" tag, so there is no version number to compare: version detection is
     # off and no pseudo-version (release date or title) is used. Obtainium simply offers
@@ -68,14 +68,9 @@ def obtainium_payload(repo_url: str, owner: str, app: str, name: str, package: s
         {"apkFilterRegEx": f"^{re.escape(app)}-", "versionDetection": False},
         separators=(",", ":"),
     )
-    return {"id": package, "url": repo_url, "author": owner, "name": name, "additionalSettings": settings}
-
-
-def obtainium_link(payloads: dict | list) -> str:
-    """Import link through Obtainium's redirect page: one app, or a list for a bulk import."""
-    kind = "apps" if isinstance(payloads, list) else "app"
-    inner = quote(json.dumps(payloads, separators=(",", ":"), ensure_ascii=False), safe="")
-    return "https://apps.obtainium.imranr.dev/redirect?r=" + quote(f"obtainium://{kind}/" + inner, safe="")
+    payload = {"id": package, "url": repo_url, "author": owner, "name": name, "additionalSettings": settings}
+    inner = quote(json.dumps(payload, separators=(",", ":"), ensure_ascii=False), safe="")
+    return "https://apps.obtainium.imranr.dev/redirect?r=" + quote("obtainium://app/" + inner, safe="")
 
 
 def build_table(tag: str) -> str:
@@ -89,7 +84,6 @@ def build_table(tag: str) -> str:
         if match and asset["name"].endswith(".apk"):
             published[match["app"]] = match["arch"]
 
-    payloads: list[dict] = []
     rows = ["| App | Patches | Architecture | Obtainium |", "| --- | --- | --- | --- |"]
     # Alphabetical by display name, whatever the build order in patch-config.json.
     for entry in sorted(config, key=lambda e: (e.get("title") or e["app_name"]).casefold()):
@@ -102,14 +96,9 @@ def build_table(tag: str) -> str:
             reason = "not published yet" if app not in published else "no package id"
             rows.append(f"| {title} | {patches} | {reason} | |")
             continue
-        payload = obtainium_payload(repo_url, owner, app, f"{title} ({source_title})", package)
-        payloads.append(payload)
-        link = obtainium_link(payload)
+        link = obtainium_link(repo_url, owner, app, f"{title} ({source_title})", package)
         rows.append(f"| {title} | {patches} | {published[app]} | [Add to Obtainium]({link}) |")
-    table = "\n".join(rows) + "\n"
-    if payloads:
-        table += f"\n[Add all {len(payloads)} apps to Obtainium at once]({obtainium_link(payloads)})\n"
-    return table
+    return "\n".join(rows) + "\n"
 
 
 def main() -> int:

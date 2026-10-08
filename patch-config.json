@@ -103,6 +103,12 @@
       "title": "Strava",
       "source": "rushiranpise",
       "arches": ["arm64-v8a"]
+    },
+    {
+      "app_name": "boldvoice",
+      "title": "BoldVoice",
+      "source": "rushiranpisedev",
+      "arches": ["arm64-v8a"]
     }
   ]
 }

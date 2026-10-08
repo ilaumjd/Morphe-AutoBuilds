@@ -22,6 +22,20 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^chess-\"}"
     },
     {
+      "id": "com.chessable.chessable",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Chessable (JCapretta)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^chessable-\"}"
+    },
+    {
+      "id": "com.facebook.katana",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Facebook (HushFacebook)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^facebook-\"}"
+    },
+    {
       "id": "dev.jason.com.google.android.inputmethod.latin",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
@@ -76,6 +90,13 @@
       "author": "ilaumjd",
       "name": "Sticker.ly (Rushiranpise)",
       "additionalSettings": "{\"apkFilterRegEx\":\"^stickerly-\"}"
+    },
+    {
+      "id": "com.strava",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Strava (Rushiranpise)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^strava-\"}"
     },
     {
       "id": "com.touchtype.swiftkey",

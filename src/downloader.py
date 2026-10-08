@@ -62,6 +62,14 @@ def cached_apk(app_name: str, version: str, arch: str) -> Path | None:
         if not cached.is_file():
             continue
         if zipfile.is_zipfile(cached):
+            fits, abis = utils.abi_matches(cached, arch)
+            if not fits:
+                # Never use (or delete) it: a build for another architecture would be
+                # patched and published under the wrong name.
+                logging.warning(
+                    f"Ignoring cached original {cached.name}: it ships {sorted(abis)} but {arch} was requested"
+                )
+                continue
             destination = Path(cached.name)
             shutil.copy2(cached, destination)
             logging.info(f"Using cached original APK: {cached}")
@@ -89,6 +97,12 @@ def download_cached_apk(
     cache_dir = ORIGINAL_APKS_DIR
     cache_dir.mkdir(parents=True, exist_ok=True)
     downloaded = download_resource(url)
+    fits, abis = utils.abi_matches(downloaded, arch)
+    if not fits:
+        downloaded.unlink(missing_ok=True)
+        raise ValueError(
+            f"{downloaded.name} ships native libraries for {sorted(abis)} only; refusing to use it for {arch}"
+        )
     if sha256:
         digest = hashlib.sha256()
         with downloaded.open("rb") as f:

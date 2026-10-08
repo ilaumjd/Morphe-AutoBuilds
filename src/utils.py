@@ -464,3 +464,60 @@ def ensure_usable_apk(apk_path: Path, app_name: str, version: str) -> Path | Non
     logging.warning("APK still fails checks after zip -FF repair; discarding download")
     apk_path.unlink(missing_ok=True)
     return None
+
+
+# --- native ABI check ------------------------------------------------------------------
+
+_ABI_DIRS = ("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+_SPLIT_ABI = re.compile(r"config[._](arm64[_-]v8a|armeabi[_-]v7a|x86_64|x86)\.apk$")
+_BUNDLE_SUFFIXES = (".apkm", ".xapk", ".apks")
+
+
+def _abis_in_apk(zf: zipfile.ZipFile) -> set[str]:
+    abis = set()
+    for name in zf.namelist():
+        parts = name.split("/")
+        if len(parts) > 2 and parts[0] == "lib" and parts[1] in _ABI_DIRS:
+            abis.add(parts[1])
+    return abis
+
+
+def native_abis(apk_path: Path) -> set[str]:
+    """ABIs an APK or bundle (.apkm/.xapk/.apks) ships native libraries for.
+
+    An empty set means the app has no native code (or the file is not a zip), so it runs
+    on any architecture.
+    """
+    try:
+        with zipfile.ZipFile(apk_path) as z:
+            if Path(apk_path).suffix.lower() not in _BUNDLE_SUFFIXES:
+                return _abis_in_apk(z)
+            abis = set()
+            for name in z.namelist():
+                match = _SPLIT_ABI.search(name)
+                if match:
+                    abis.add(match.group(1).replace("arm64_v8a", "arm64-v8a").replace("armeabi_v7a", "armeabi-v7a"))
+            if abis:
+                return abis
+            # No per-ABI split: the libraries, if any, live inside the base APK.
+            for name in z.namelist():
+                if name.endswith(".apk") and "/" not in name and not name.startswith("split_config"):
+                    import io
+                    with zipfile.ZipFile(io.BytesIO(z.read(name))) as inner:
+                        abis |= _abis_in_apk(inner)
+            return abis
+    except (zipfile.BadZipFile, OSError):
+        return set()
+
+
+def abi_matches(apk_path: Path, arch: str) -> tuple[bool, set[str]]:
+    """Whether a file can serve the requested architecture.
+
+    ``universal`` accepts anything. For ``arm64-v8a`` or ``armeabi-v7a`` an app that ships
+    native libraries must ship that ABI's: an x86-only build must never be used as arm64.
+    An app without native libraries matches every architecture.
+    """
+    abis = native_abis(apk_path)
+    if arch in (None, "", "universal") or not abis:
+        return True, abis
+    return arch in abis, abis

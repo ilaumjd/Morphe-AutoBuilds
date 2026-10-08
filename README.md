@@ -155,6 +155,9 @@ apks/
   patched/    <app>-<arch>-<source>-v<version>-<UTC date>.apk
 ```
 
+An original is only used for the architecture it was requested for: a file whose native
+libraries do not include the requested ABI (for example an x86-only APK for `arm64-v8a`)
+is refused when downloaded and ignored, never deleted, when found in the folder.
 The pipeline never deletes anything in either folder. It finds an original purely
 by its name (for example `tiktok-arm64-v8a-original-v47.1.4.apk`), so a stock APK
 you place there by hand with the right name is used as-is. Originals are reused

@@ -4,3 +4,18 @@
 + Turn off double tap to like
 + Hold a reel for 2x
 + Don't send reel watch history
++ Download any video
++ Hide Stories tray
++ Block background-return feed refresh
++ Picture-in-picture
++ Tap to play
++ Hold back analytics uploads
++ Allow screenshots
++ Block screenshot detection
++ Stop Story auto-advance
++ View stories anonymously
++ Turn off HDR brightness
++ Default playback quality
++ AMOLED black theme
++ Material You theme
++ Use the system font

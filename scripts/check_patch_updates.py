@@ -15,6 +15,10 @@ from urllib.request import Request, urlopen
 
 ROOT = Path(__file__).resolve().parent.parent
 
+# Config fields that only affect the README and Obtainium links, not what gets built:
+# changing them must not trigger a rebuild.
+DISPLAY_ONLY_FIELDS = {"title", "package"}
+
 
 def github_json(url: str) -> dict | list:
     headers = {"Accept": "application/vnd.github+json"}
@@ -79,6 +83,17 @@ def write_output(name: str, value: str) -> None:
         print(f"{name}={value}")
 
 
+def entries_hash(entries: list[dict]) -> str:
+    """Hash of a source's build entries, ignoring display-only fields."""
+    build_entries = [
+        {key: value for key, value in entry.items() if key not in DISPLAY_ONLY_FIELDS}
+        for entry in entries
+    ]
+    return hashlib.sha256(
+        json.dumps(build_entries, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--previous", type=Path, required=True)
@@ -94,9 +109,7 @@ def main() -> None:
     current = {
         "sources": {
             source: {
-                "entries_sha256": hashlib.sha256(
-                    json.dumps(entries, sort_keys=True, separators=(",", ":")).encode()
-                ).hexdigest(),
+                "entries_sha256": entries_hash(entries),
                 "bundles": source_state(source),
             }
             for source, entries in sorted(entries_by_source.items())

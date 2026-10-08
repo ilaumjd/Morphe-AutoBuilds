@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-"""Keep only the newest build of each app on a GitHub release.
+"""Keep only the newest build of each app on its GitHub release(s).
 
-Patched APKs are named ``<app>-<arch>-<source>-v<version>-<YYYYMMDD>.apk``. For
-every (app, source) pair the assets with the newest date are kept and any older
-ones are deleted. With ``--built``, the APKs just published are also
-authoritative: any other asset of an app they cover is deleted, even when it has
-the same date (e.g. a universal build replaced by an arm64 one the same day), so
-the release never holds two versions of the same app. Assets that do not follow
-the naming pattern (state files, notes) are left alone.
+Patched APKs are named ``<app>-<arch>-<source>-v<version>-<YYYYMMDD>.apk``. In every
+release, for each (app, source) pair the assets with the newest date are kept and
+older ones are deleted. With ``--built``, the APKs just published are also
+authoritative: any other asset of an app they cover is deleted, even when it has the
+same date (e.g. a universal build replaced by an arm64 one the same day). Assets that
+do not follow the naming pattern (state files, notes) are left alone.
 
-Uses the ``gh`` CLI, which picks the repository from the current checkout.
+By default every release is checked (``--tag`` limits it to one). Publishing already
+replaces an app's asset on its own release (scripts/publish_releases.py); this is for
+manual clean-ups. Uses the ``gh`` CLI, which picks the repository from the checkout.
 """
 import argparse
 import json
@@ -54,21 +55,25 @@ def stale_assets(assets: list[dict], built: list[str] = ()) -> list[dict]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--tag", default="latest", help="release tag (default: latest)")
+    parser.add_argument("--tag", help="check only this release (default: all releases)")
     parser.add_argument("--built", nargs="*", default=[], metavar="APK",
                         help="file names just published; other assets of the same apps are removed")
     parser.add_argument("--dry-run", action="store_true", help="only list what would be deleted")
     args = parser.parse_args()
 
-    release = json.loads(gh_api(f"repos/{{owner}}/{{repo}}/releases/tags/{args.tag}"))
-    stale = stale_assets(release.get("assets", []), args.built)
-    if not stale:
-        print("Release holds only the newest build of each app.")
-        return 0
-    for asset in stale:
-        print(f"{'Would delete' if args.dry_run else 'Deleting'} older build: {asset['name']}")
-        if not args.dry_run:
-            gh_api("-X", "DELETE", f"repos/{{owner}}/{{repo}}/releases/assets/{asset['id']}")
+    if args.tag:
+        releases = [json.loads(gh_api(f"repos/{{owner}}/{{repo}}/releases/tags/{args.tag}"))]
+    else:
+        releases = json.loads(gh_api("repos/{owner}/{repo}/releases?per_page=100"))
+    found = False
+    for release in releases:
+        for asset in stale_assets(release.get("assets", []), args.built):
+            found = True
+            print(f"{'Would delete' if args.dry_run else 'Deleting'} older build: {release['tag_name']}/{asset['name']}")
+            if not args.dry_run:
+                gh_api("-X", "DELETE", f"repos/{{owner}}/{{repo}}/releases/assets/{asset['id']}")
+    if not found:
+        print("Every release holds only the newest build of its app.")
     return 0
 
 

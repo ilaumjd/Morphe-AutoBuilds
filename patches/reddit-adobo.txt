@@ -1,0 +1,8 @@
++ Disable mobile ads
++ Deactivate Firebase Analytics
++ Deactivate Firebase Performance Monitoring
++ Remove screenshot detection
++ Disable bottom navigation bar auto-hide
++ Disable home feed auto-refresh
++ Disable home feed refresh on back to exit
++ Hide Ask button from search bar

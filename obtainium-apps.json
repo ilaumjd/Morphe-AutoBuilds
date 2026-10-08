@@ -5,98 +5,98 @@
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Brave (Kveld)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^brave-\",\"filterReleaseTitlesByRegEx\":\"^Brave \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^brave-\"}"
     },
     {
       "id": "com.lemon.lvoverseas",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "CapCut (Riky)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^capcut-\",\"filterReleaseTitlesByRegEx\":\"^CapCut \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^capcut-\"}"
     },
     {
       "id": "com.chess",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Chess.com (Prathxm)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^chess-\",\"filterReleaseTitlesByRegEx\":\"^Chess\\\\.com \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^chess-\"}"
     },
     {
       "id": "dev.jason.com.google.android.inputmethod.latin",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Gboard (JasonWu)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^gboard-\",\"filterReleaseTitlesByRegEx\":\"^Gboard \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^gboard-\"}"
     },
     {
       "id": "org.ungoogled.android.apps.maps",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Google Maps (BearInMindCat)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^maps-\",\"filterReleaseTitlesByRegEx\":\"^Google Maps \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^maps-\"}"
     },
     {
       "id": "homeworkout.homeworkouts.noequipment",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Home Workout (Rushiranpise)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^homeworkout-\",\"filterReleaseTitlesByRegEx\":\"^Home Workout \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^homeworkout-\"}"
     },
     {
       "id": "com.jellywatch.tv",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "JellyWatch TV (FranticG33k)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^jellywatchtv-\",\"filterReleaseTitlesByRegEx\":\"^JellyWatch TV \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^jellywatchtv-\"}"
     },
     {
       "id": "com.linkedin.android",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "LinkedIn (Michii)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^linkedin-\",\"filterReleaseTitlesByRegEx\":\"^LinkedIn \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^linkedin-\"}"
     },
     {
       "id": "com.mchutov.Quranify",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Quranify (HxReborn)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^quranify-\",\"filterReleaseTitlesByRegEx\":\"^Quranify \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^quranify-\"}"
     },
     {
       "id": "com.reddit.frontpage",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Reddit (Adobo)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^reddit-\",\"filterReleaseTitlesByRegEx\":\"^Reddit \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^reddit-\"}"
     },
     {
       "id": "com.snowcorp.stickerly.android",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Sticker.ly (Rushiranpise)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^stickerly-\",\"filterReleaseTitlesByRegEx\":\"^Sticker\\\\.ly \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^stickerly-\"}"
     },
     {
       "id": "com.touchtype.swiftkey",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "SwiftKey (Hoomans)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^swiftkey-\",\"filterReleaseTitlesByRegEx\":\"^SwiftKey \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^swiftkey-\"}"
     },
     {
       "id": "com.server.auditor.ssh.client",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Termius (Rushiranpise)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^termius-\",\"filterReleaseTitlesByRegEx\":\"^Termius \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^termius-\"}"
     },
     {
       "id": "com.zhiliaoapp.musically",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "TikTok (HushFeed)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^tiktok-\",\"filterReleaseTitlesByRegEx\":\"^TikTok \",\"releaseTitleAsVersion\":true,\"versionExtractionRegEx\":\"(\\\\S+)$\",\"matchGroupToUse\":\"$1\"}"
+      "additionalSettings": "{\"apkFilterRegEx\":\"^tiktok-\"}"
     }
   ]
 }

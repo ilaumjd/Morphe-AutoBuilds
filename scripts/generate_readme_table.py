@@ -4,9 +4,8 @@
 The table is built from ``patch-config.json`` (which apps, sorted by display name), the
 ``sources/*.json`` files (patch repository and display name) and the assets on
 the per-app GitHub releases (which architecture and version are published). Each row gets an
-Obtainium import link: it selects the app's own release by title, takes the
-release title ("<App> <version>") as the version and cuts the version number off
-its end, so Obtainium compares real versions.
+Obtainium import link that selects the app's own release (tagged v<version>) by its APK
+name; Obtainium reads the tag as the version, so no version settings are needed.
 
 Optional metadata:
   patch-config.json entry   "title"    display name (default: the app name)
@@ -68,22 +67,11 @@ def source_info(source: str) -> tuple[str, str | None]:
     return title, repo
 
 
-def obtainium_payload(repo_url: str, owner: str, app: str, title: str, name: str, package: str) -> dict:
-    # Every app has its own release (tag = app name) titled "<title> <version>", so
-    # Obtainium picks the app's release by title, takes the release title as the version
-    # and cuts the version number off its end: a real version that it can compare with
-    # the installed one (no pseudo-version, version detection left at its default).
-    title_pattern = re.escape(title).replace("\\ ", " ")
-    settings = json.dumps(
-        {
-            "apkFilterRegEx": f"^{re.escape(app)}-",
-            "filterReleaseTitlesByRegEx": f"^{title_pattern} ",
-            "releaseTitleAsVersion": True,
-            "versionExtractionRegEx": r"(\S+)$",
-            "matchGroupToUse": "$1",
-        },
-        separators=(",", ":"),
-    )
+def obtainium_payload(repo_url: str, owner: str, app: str, name: str, package: str) -> dict:
+    # Every app has its own release tagged "v<version>", and Obtainium reads a release's tag
+    # as the app version, so no version settings are needed: the only one is the APK filter
+    # that picks this app's release among the others.
+    settings = json.dumps({"apkFilterRegEx": f"^{re.escape(app)}-"}, separators=(",", ":"))
     return {"id": package, "url": repo_url, "author": owner, "name": name, "additionalSettings": settings}
 
 
@@ -127,7 +115,7 @@ def build_table() -> tuple[str, list[dict], str]:
             rows.append(f"| {title} | {patches} | {reason} | | |")
             continue
         arch, version, release_url = published[app]
-        payload = obtainium_payload(repo_url, owner, app, title, f"{title} ({source_title})", package)
+        payload = obtainium_payload(repo_url, owner, app, f"{title} ({source_title})", package)
         payloads.append(payload)
         link = obtainium_link(payload)
         rows.append(f"| {title} | {patches} | {arch} | [{version}]({release_url}) | [Add to Obtainium]({link}) |")

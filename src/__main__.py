@@ -273,6 +273,8 @@ def run_build(
 
         # Keep a record of what was applied and what was left off, to review later.
         report = patchlog.parse(patch_output, patch_rule_lines(app_name, source))
+        if report.get("package"):
+            patchlog.enrich(report, patchlog.describe(cli, patches, report["package"]), Path(patches).name, Path(cli).name)
         patchlog.save(signed_apk, report)
         print(f"📋 Patches for {signed_apk.name}: {patchlog.summary(report)}")
         print(f"✅ APK built: {signed_apk.name}")

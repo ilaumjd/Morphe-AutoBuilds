@@ -19,3 +19,7 @@
 + AMOLED black theme
 + Material You theme
 + Use the system font
++ Hide read receipts
++ Hide typing indicator
++ Hide seen posts
++ Hide Meta upsells

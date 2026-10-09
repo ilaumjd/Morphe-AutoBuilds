@@ -47,7 +47,13 @@ fi
 
 # Publish only the APKs patched in this run (apks/patched keeps older builds): each app
 # gets its own release, titled "<App> <version>" so Obtainium can read a real version.
-if [ -f build-results.json ] && python scripts/publish_releases.py --results build-results.json --dry-run | grep -q .; then
+# (Capture the dry run instead of piping it into "grep -q": with pipefail, grep closing the
+# pipe early makes python fail with a broken pipe and the publish step was skipped silently.)
+to_publish=""
+if [ -f build-results.json ]; then
+  to_publish=$(python scripts/publish_releases.py --results build-results.json --dry-run)
+fi
+if [ -n "$to_publish" ]; then
   cp "$candidate_state" patch-state.json
   python scripts/publish_releases.py --results build-results.json --state patch-state.json
   cp "$candidate_state" "$previous_state"

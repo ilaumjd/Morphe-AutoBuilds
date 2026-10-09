@@ -11,3 +11,8 @@
 + Hide already seen videos
 + Hide suggested accounts
 + Skip content warnings
++ Stop recording watch history
++ Turn off haptics
++ Turn off screen transitions
++ App lock
++ Show engagement rate

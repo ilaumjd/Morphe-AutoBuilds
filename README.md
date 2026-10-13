@@ -171,6 +171,12 @@ the release (a rebuild on the same day overwrites that day's file of the same
 name). Override the locations with `APKS_DIR`, `ORIGINAL_APKS_DIR` or
 `PATCHED_APKS_DIR`.
 
+Old patched builds pile up in `apks/patched/`. To remove every patched build (with its
+`.idsig` and patch report) that is not the one published on its app's release, run
+`docker-compose run --rm --no-deps --entrypoint python builder scripts/clean_patched.py --dry-run`
+and then without `--dry-run`. Builds of apps without a release yet and everything in
+`apks/original` are left alone.
+
 To fetch an original from a specific direct link instead of querying an app
 store, add a pinned `version` and `download_url` to that app's store
 configuration, or use a one-off `APK_URL` environment variable:

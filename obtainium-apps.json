@@ -118,6 +118,13 @@
       "author": "ilaumjd",
       "name": "TikTok (HushFeed)",
       "additionalSettings": "{\"apkFilterRegEx\":\"^tiktok-\"}"
+    },
+    {
+      "id": "com.truecaller",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Truecaller (Paresh)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^truecaller-\"}"
     }
   ]
 }

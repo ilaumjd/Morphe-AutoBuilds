@@ -62,7 +62,12 @@ def source_info(source: str) -> tuple[str, str | None]:
     entries = json.loads((ROOT / "sources" / f"{source}.json").read_text())
     title = entries[0].get("title") or entries[0]["name"]
     repo = next(
-        (f"{e['user']}/{e['repo']}" for e in entries[1:] if e.get("repo") != "morphe-cli"), None
+        (
+            f"https://gitlab.com/{e['gitlab']}" if "gitlab" in e else f"https://github.com/{e['user']}/{e['repo']}"
+            for e in entries[1:]
+            if e.get("repo") != "morphe-cli"
+        ),
+        None,
     )
     return title, repo
 
@@ -108,7 +113,7 @@ def build_table() -> tuple[str, list[dict], str]:
         app, source = entry["app_name"], entry["source"]
         title = entry.get("title") or app
         source_title, patch_repo = source_info(source)
-        patches = f"[{source_title}](https://github.com/{patch_repo})" if patch_repo else source_title
+        patches = f"[{source_title}]({patch_repo})" if patch_repo else source_title
         package = entry.get("package") or store_package(app)
         if app not in published or not package:
             reason = "not published yet" if app not in published else "no package id"

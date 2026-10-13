@@ -2,6 +2,14 @@
 set -euo pipefail
 
 cd /workspace
+
+# One run at a time: a second start (cron plus a manual run) exits instead of racing on state.
+exec 9>/data/state/.pipeline.lock
+if ! flock -n 9; then
+  echo "Another pipeline run is in progress; exiting."
+  exit 0
+fi
+
 git config --global --add safe.directory /workspace
 git pull --ff-only origin main
 
@@ -19,6 +27,7 @@ GITHUB_OUTPUT="$output_file" python scripts/check_patch_updates.py \
 source "$output_file"
 if [ "$should_build" != true ]; then
   echo "No patch-bundle updates found."
+  python scripts/notify_ntfy.py --previous "$previous_state" --candidate "$candidate_state" || true
   exit 0
 fi
 
@@ -44,6 +53,13 @@ if [ -f build-results.json ]; then
     --candidate "$candidate_state" \
     --results build-results.json
 fi
+
+# Summary for ntfy, taken before the candidate state replaces the previous one.
+results_args=()
+if [ -f build-results.json ]; then results_args=(--results build-results.json); fi
+download_args=()
+if [ -f download-results.json ]; then download_args=(--download-results download-results.json); fi
+python scripts/notify_ntfy.py --previous "$previous_state" --candidate "$candidate_state" "${results_args[@]}" "${download_args[@]}" || true
 
 # Publish only the APKs patched in this run (apks/patched keeps older builds): each app
 # gets its own release, titled "<App> <version>" so Obtainium can read a real version.

@@ -130,10 +130,14 @@ def download_required(source: str) -> tuple[list[Path], str]:
     downloaded_files = []
 
     for repo_info in repos_info[1:]:
-        release = utils.detect_github_release(
-            repo_info["user"], repo_info["repo"], repo_info.get("tag", "latest")
-        )
-        logging.info(f"{repo_info['user']}/{repo_info['repo']}: {release['tag_name']}")
+        if "gitlab" in repo_info:
+            release = utils.detect_gitlab_release(repo_info["gitlab"], repo_info.get("tag", "latest"))
+            logging.info(f"{repo_info['gitlab']}: {release['tag_name']}")
+        else:
+            release = utils.detect_github_release(
+                repo_info["user"], repo_info["repo"], repo_info.get("tag", "latest")
+            )
+            logging.info(f"{repo_info['user']}/{repo_info['repo']}: {release['tag_name']}")
         for asset in release["assets"]:
             if asset["name"].endswith((".jar", ".mpp")):
                 downloaded_files.append(download_resource(asset["browser_download_url"]))

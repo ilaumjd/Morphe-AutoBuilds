@@ -294,6 +294,28 @@ def detect_github_release(user: str, repo: str, tag: str = "latest") -> dict:
 
     return data
 
+def detect_gitlab_release(project: str, tag: str = "latest") -> dict:
+    """Return the newest stable GitLab release of ``project`` in GitHub-release shape."""
+    from urllib.parse import quote
+
+    if tag != "latest":
+        raise ValueError(f"Only the latest GitLab release is supported, not {tag!r}")
+    url = f"https://gitlab.com/api/v4/projects/{quote(project, safe='')}/releases"
+    logging.info(f"Fetching latest release for {project} (GitLab)...")
+    response = session.get(url, timeout=30)
+    response.raise_for_status()
+    stable = [r for r in response.json() if "-" not in r["tag_name"]]
+    if not stable:
+        raise ValueError(f"No stable GitLab release found for {project}")
+    release = stable[0]
+    return {
+        "tag_name": release["tag_name"],
+        "assets": [
+            {"name": link["name"], "browser_download_url": link["direct_asset_url"]}
+            for link in release["assets"]["links"]
+        ],
+    }
+
 def strip_zip_entries(zip_path: Path, patterns: list[str]) -> None:
     """Strip matching file patterns from a ZIP archive in a cross-platform way."""
     if not zip_path or not zip_path.exists():

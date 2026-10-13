@@ -10,6 +10,7 @@ import os
 import sys
 from pathlib import Path
 from urllib.error import HTTPError
+from urllib.parse import quote
 from urllib.request import Request, urlopen
 
 
@@ -29,7 +30,38 @@ def github_json(url: str) -> dict | list:
         return json.load(response)
 
 
+def gitlab_release(project: str, tag: str) -> dict:
+    """Newest stable GitLab release of ``project`` (tags with a pre-release suffix are skipped)."""
+    if tag != "latest":
+        raise RuntimeError(f"Only the latest GitLab release is supported, not {tag!r}")
+    url = f"https://gitlab.com/api/v4/projects/{quote(project, safe='')}/releases"
+    with urlopen(Request(url, headers={"Accept": "application/json"}), timeout=30) as response:
+        releases = json.load(response)
+    stable = [release for release in releases if "-" not in release["tag_name"]]
+    if not stable:
+        raise RuntimeError(f"No stable release found for {project}")
+    release = stable[0]
+    return {
+        "id": release["tag_name"],
+        "tag_name": release["tag_name"],
+        "published_at": release.get("released_at"),
+        "assets": [
+            {
+                "id": link["id"],
+                "name": link["name"],
+                "size": 0,
+                "updated_at": release.get("released_at"),
+                "download_url": link["direct_asset_url"],
+            }
+            for link in release["assets"]["links"]
+            if link["name"].endswith(".mpp")
+        ],
+    }
+
+
 def release_for(entry: dict) -> dict:
+    if "gitlab" in entry:
+        return gitlab_release(entry["gitlab"], entry.get("tag", "latest"))
     user, repo = entry["user"], entry["repo"]
     tag = entry.get("tag", "latest")
     api = f"https://api.github.com/repos/{user}/{repo}/releases"
@@ -61,9 +93,10 @@ def source_state(source: str) -> list[dict]:
             for asset in release.get("assets", [])
             if asset["name"].endswith(".mpp")
         ]
+        repository = entry["gitlab"] if "gitlab" in entry else f"{entry['user']}/{entry['repo']}"
         state.append(
             {
-                "repository": f"{entry['user']}/{entry['repo']}",
+                "repository": repository,
                 "requested_tag": entry.get("tag", "latest"),
                 "release_id": release["id"],
                 "tag_name": release["tag_name"],

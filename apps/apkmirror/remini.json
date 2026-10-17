@@ -1,0 +1,9 @@
+{
+  "org": "bending-spoons",
+  "name": "remini-ai-photo-enhancer",
+  "type": "BUNDLE",
+  "arch": "arm64-v8a",
+  "dpi": "480-640dpi",
+  "package": "com.bigwinepot.nwdn.international",
+  "version": "3.7.1465.202525946"
+}

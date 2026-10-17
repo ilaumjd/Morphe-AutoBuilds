@@ -71,6 +71,13 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^linkedin-\"}"
     },
     {
+      "id": "com.picsart.studio",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Picsart (Rushiranpise)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^picsart-\"}"
+    },
+    {
       "id": "com.mchutov.Quranify",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",

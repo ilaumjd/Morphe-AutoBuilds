@@ -44,12 +44,6 @@
       "arches": ["arm64-v8a"]
     },
     {
-      "app_name": "remini",
-      "title": "Remini",
-      "source": "mightymichs",
-      "arches": ["arm64-v8a"]
-    },
-    {
       "app_name": "quranify",
       "title": "Quranify",
       "source": "hxreborn",

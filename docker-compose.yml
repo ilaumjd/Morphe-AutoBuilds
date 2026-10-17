@@ -8,6 +8,11 @@ services:
     # tini as PID 1: forwards stop signals so "docker stop" exits cleanly
     # instead of waiting out the timeout and ending in SIGKILL (exit 137).
     init: true
+    # Podman on SELinux hosts: the ./ bind mount is unreadable to the container without this.
+    security_opt:
+      - label=disable
+    # Podman (rootless): keep host uid 1000 mapped to container uid 1000 so the repo and state are writable.
+    userns_mode: keep-id
     stop_grace_period: 30s
     environment:
       HOME: /tmp

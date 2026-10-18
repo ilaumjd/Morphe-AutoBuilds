@@ -129,7 +129,7 @@ _The "Available builds" table above is generated: after changing `patch-config.j
 publishing a build, run `docker-compose run --rm --no-deps --entrypoint python builder scripts/generate_readme_table.py`
 (add `--check` to only verify) and commit the result._
 
-The local runner (see below) builds daily at 06:00 UTC. Each successful build is
+The local runner (see below) builds daily at 21:00 UTC (04:00 WIB). Each successful build is
 published by `scripts/publish_releases.py` to the app's own release: the release is
 retagged `v<version>` (suffixed `-<app>` only if another app already uses that tag),
 renamed `<App> <version>`, and the APK replaces the previous one, so a release only holds
@@ -193,7 +193,7 @@ APK_URL='https://example.com/your-app.apk' python -m src download
 
 `docker-compose.yml` runs the pipeline in a persistent container and keeps base
 APK downloads and patched builds in the local `apks/` folder. It checks for patch updates on
-startup and every day at 06:00 UTC, then publishes successful builds to
+startup and every day at 21:00 UTC (04:00 WIB), then publishes successful builds to
 their GitHub releases (one per app).
 
 Create a `.env` file beside `docker-compose.yml` with a GitHub token that can

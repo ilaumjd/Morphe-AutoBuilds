@@ -113,6 +113,13 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^swiftkey-\"}"
     },
     {
+      "id": "org.telegram.messenger",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Telegram (HushTelegram)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^telegram-\"}"
+    },
+    {
       "id": "com.server.auditor.ssh.client",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",

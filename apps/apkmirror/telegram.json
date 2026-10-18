@@ -1,0 +1,9 @@
+{
+  "org": "telegram-fz-llc",
+  "name": "telegram",
+  "type": "APK",
+  "arch": "universal",
+  "dpi": "nodpi",
+  "package": "org.telegram.messenger",
+  "version": "13.0.3"
+}

@@ -6,3 +6,7 @@
 + Disable home feed auto-refresh
 + Disable home feed refresh on back to exit
 + Hide Ask button from search bar
++ Disable Google Safe Browsing in WebView
++ Disable home feed swipe
++ Disable post detail swipe
++ Make system navigation bar transparent

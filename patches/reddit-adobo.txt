@@ -10,3 +10,5 @@
 + Disable home feed swipe
 + Disable post detail swipe
 + Make system navigation bar transparent
++ Disable metrics collection in WebView
++ Block ads, trackers, and analytics {hosts=patches/hosts/ads-trackers.txt}

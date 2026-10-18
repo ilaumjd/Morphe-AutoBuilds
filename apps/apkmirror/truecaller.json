@@ -1,9 +1,9 @@
 {
-  "org": "truecaller",
+  "org": "true-software-scandinavia-ab",
   "name": "truecaller-caller-id-block",
-  "type": "APK",
+  "type": "BUNDLE",
   "arch": "arm64-v8a",
-  "dpi": "nodpi",
+  "dpi": "480-640dpi",
   "package": "com.truecaller",
-  "version": "26.10.6"
+  "version": "26.40.5"
 }

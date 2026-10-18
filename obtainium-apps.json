@@ -132,6 +132,13 @@
       "author": "ilaumjd",
       "name": "Truecaller (Paresh)",
       "additionalSettings": "{\"apkFilterRegEx\":\"^truecaller-\"}"
+    },
+    {
+      "id": "com.waze",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Waze (BearInMindCat)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^waze-\"}"
     }
   ]
 }

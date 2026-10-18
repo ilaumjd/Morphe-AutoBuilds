@@ -137,7 +137,7 @@
       "id": "com.waze",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
-      "name": "Waze (BearInMindCat)",
+      "name": "Waze (Forsigh)",
       "additionalSettings": "{\"apkFilterRegEx\":\"^waze-\"}"
     }
   ]

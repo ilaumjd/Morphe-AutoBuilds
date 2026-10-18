@@ -52,7 +52,7 @@
     {
       "app_name": "waze",
       "title": "Waze",
-      "source": "bearinmindcat",
+      "source": "forsigh",
       "arches": ["arm64-v8a"]
     },
     {

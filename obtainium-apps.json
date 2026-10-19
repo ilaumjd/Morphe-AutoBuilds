@@ -29,6 +29,13 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^chessable-\"}"
     },
     {
+      "id": "com.discord",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Discord (Venus)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^discord-\"}"
+    },
+    {
       "id": "com.facebook.katana",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",

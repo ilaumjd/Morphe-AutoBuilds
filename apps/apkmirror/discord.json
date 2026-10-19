@@ -1,0 +1,9 @@
+{
+  "org": "discord",
+  "name": "discord-chat-for-gamers",
+  "type": "BUNDLE",
+  "arch": "universal",
+  "dpi": "nodpi",
+  "package": "com.discord",
+  "version": "348.10"
+}

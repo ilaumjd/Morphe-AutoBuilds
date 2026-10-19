@@ -43,6 +43,11 @@ def load_patch_rules(app_name: str, source: str) -> list[str]:
     enables a patch and sets its options.
     """
     args: list[str] = []
+    # An options JSON (patches/<app>-<source>.options.json, git-ignored) sets patch options such
+    # as API credentials that can't go in the plain rules file.
+    options_path = Path("patches") / f"{app_name}-{source}.options.json"
+    if options_path.exists():
+        args.append(f"--options-file={options_path}")
     patches_path = Path("patches") / f"{app_name}-{source}.txt"
     if not patches_path.exists():
         return args

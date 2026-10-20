@@ -13,3 +13,4 @@ build-results.json
 download-results.json
 .env
 patches/telegram-hushtelegram.options.json
+patches/instagram-hushgram.options.json

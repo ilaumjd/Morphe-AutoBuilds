@@ -64,6 +64,13 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^homeworkout-\"}"
     },
     {
+      "id": "com.instagram.android",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Instagram (HushGram)",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^instagram-\"}"
+    },
+    {
       "id": "com.jellywatch.tv",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",

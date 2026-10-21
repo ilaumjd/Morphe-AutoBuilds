@@ -18,7 +18,7 @@
       "id": "com.chess",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
-      "name": "Chess.com (Prathxm)",
+      "name": "Chess.com (Noam's Patches)",
       "additionalSettings": "{\"apkFilterRegEx\":\"^chess-\"}"
     },
     {

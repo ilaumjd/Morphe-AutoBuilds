@@ -9,7 +9,7 @@
     {
       "app_name": "chess",
       "title": "Chess.com",
-      "source": "prathxm",
+      "source": "noams",
       "arches": ["arm64-v8a"]
     },
     {

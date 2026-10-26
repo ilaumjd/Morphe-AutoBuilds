@@ -1,5 +1,5 @@
 [
   { "name": "venus", "title": "Venus" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
-  { "user": "VenusIsJaded", "repo": "Venus-Patches", "tag": "latest" }
+  { "user": "VenusIsJaded", "repo": "Venus-Patches", "tag": "v1.15.0" }
 ]

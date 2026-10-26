@@ -312,3 +312,18 @@ def download_platform(
     except Exception as e:
         logging.error(f"Unexpected error: {e}")
         return None, None, []
+
+
+def pinned_cli(version: str) -> Path:
+    """The Morphe CLI jar of one release, for apps pinned with "cli" in patch-config.json.
+
+    Kept in the repository root as morphe-desktop-<version>-all.jar, so it is downloaded once.
+    """
+    local = Path(f"morphe-desktop-{version}-all.jar")
+    if local.exists():
+        return local
+    release = utils.detect_github_release("MorpheApp", "morphe-cli", f"v{version}")
+    asset = next(a for a in release["assets"] if a["name"].endswith("-all.jar"))
+    if asset["name"] != local.name:
+        raise RuntimeError(f"CLI release v{version} has {asset['name']}, expected {local.name}")
+    return download_resource(asset["browser_download_url"], local.name)

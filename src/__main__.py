@@ -282,6 +282,10 @@ def run_build(
             patchlog.enrich(report, patchlog.describe(cli, patches, report["package"]), Path(patches).name, Path(cli).name)
         patchlog.save(signed_apk, report)
         print(f"📋 Patches for {signed_apk.name}: {patchlog.summary(report)}")
+        if not report.get("applied"):
+            # A build with no patches applied is not a usable Morphe build; never publish it.
+            signed_apk.unlink(missing_ok=True)
+            raise RuntimeError(f"no patches applied to {signed_apk.name}; not publishing it")
         print(f"✅ APK built: {signed_apk.name}")
         return str(signed_apk)
 
@@ -341,11 +345,17 @@ def main(stage: str = "all"):
                     logging.info(f"✅ Using patches: {patches.name}")
                     tools[source] = (cli, patches, name)
 
+                # An app can pin its own CLI version ("cli" in patch-config.json).
+                pinned_tool = tools[source]
+                if entry.get("cli"):
+                    pinned_tool = (downloader.pinned_cli(entry["cli"]), tools[source][1], tools[source][2])
+                    logging.info(f"Using pinned CLI {entry['cli']} for {label}")
+
                 if stage == "download":
-                    apk_path = download_original(app_name, *tools[source][:2], arch)
+                    apk_path = download_original(app_name, *pinned_tool[:2], arch)
                 else:
                     apk_path = run_build(
-                        app_name, source, arch, *tools[source], cached_only=stage == "patch"
+                        app_name, source, arch, *pinned_tool, cached_only=stage == "patch"
                     )
             except Exception as e:
                 logging.error(f"❌ {label} failed: {e}")
@@ -357,11 +367,11 @@ def main(stage: str = "all"):
                 try:
                     if stage == "download":
                         apk_path = download_original(
-                            app_name, *tools[source][:2], "universal", universal_fallback=True
+                            app_name, *pinned_tool[:2], "universal", universal_fallback=True
                         )
                     else:
                         apk_path = run_build(
-                            app_name, source, "universal", *tools[source],
+                            app_name, source, "universal", *pinned_tool,
                             cached_only=stage == "patch", universal_fallback=True,
                         )
                 except Exception as e:

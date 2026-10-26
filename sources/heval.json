@@ -1,5 +1,5 @@
 [
   { "name": "heval", "title": "Heval" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
-  { "user": "heval99", "repo": "Heval-Morphe-Patches", "tag": "latest" }
+  { "user": "heval99", "repo": "Heval-Morphe-Patches", "tag": "v1.16.0" }
 ]

@@ -15,6 +15,7 @@ from src import (
 )
 from src import patchlog
 from src.paths import patched_apk
+from src import manifest
 
 KEYSTORE = {
     "path": getenv("KEYSTORE_PATH", "keystore/public.jks"),
@@ -201,6 +202,22 @@ def download_original(
     return True
 
 
+
+def release_suffix_enabled(app_name: str, source: str) -> bool:
+    """True when the app's patch-config entry sets "release_suffix": the built version is
+    <app version>-p<bundle version>, and the APK's own versionName is rewritten to match."""
+    cfg = json.loads((Path("patch-config.json")).read_text())
+    return any(
+        e.get("app_name") == app_name and e.get("source") == source and e.get("release_suffix")
+        for e in cfg["patch_list"]
+    )
+
+def bundle_version(patches: Path) -> str:
+    match = re.search(r"patches-(\d[\w.]*)\.mpp$", Path(patches).name)
+    if not match:
+        raise RuntimeError(f"cannot read the bundle version from {Path(patches).name}")
+    return match.group(1)
+
 def run_build(
     app_name: str, source: str, arch: str, cli: Path, patches: Path, name: str,
     cached_only: bool = False, universal_fallback: bool = False,
@@ -271,9 +288,18 @@ def run_build(
 
         input_apk.unlink(missing_ok=True)
 
-        signed_apk = patched_apk(app_name, arch, name, version, BUILD_DATE)
+        release_version = version
+        if release_suffix_enabled(app_name, source):
+            release_version = f"{version}-p{bundle_version(patches)}"
+        signed_apk = patched_apk(app_name, arch, name, release_version, BUILD_DATE)
         signed_apk.parent.mkdir(parents=True, exist_ok=True)
-        sign_apk(output_apk, signed_apk)
+        sign_input = output_apk
+        if release_version != version:
+            sign_input = output_apk.with_name(output_apk.stem + "-named.apk")
+            manifest.set_version_name(output_apk, sign_input, release_version)
+        sign_apk(sign_input, signed_apk)
+        if sign_input != output_apk:
+            sign_input.unlink(missing_ok=True)
         output_apk.unlink(missing_ok=True)
 
         # Keep a record of what was applied and what was left off, to review later.

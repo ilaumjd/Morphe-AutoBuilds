@@ -1,5 +1,5 @@
 [
   { "name": "kveldextra", "title": "kveld Extra" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
-  { "user": "kveld9", "repo": "kveld-extra-morphe-patches", "tag": "latest" }
+  { "user": "kveld9", "repo": "kveld-extra-morphe-patches", "tag": "v1.28.0" }
 ]

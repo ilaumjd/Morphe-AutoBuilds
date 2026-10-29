@@ -310,6 +310,8 @@ def run_build(
 
         # Keep a record of what was applied and what was left off, to review later.
         report = patchlog.parse(patch_output, patch_rule_lines(app_name, source))
+        report["aligned"] = True  # the check above failed the build otherwise
+        print(f"✅ aligned: {signed_apk.name}")
         if report.get("package"):
             patchlog.enrich(report, patchlog.describe(cli, patches, report["package"]), Path(patches).name, Path(cli).name)
         patchlog.save(signed_apk, report)

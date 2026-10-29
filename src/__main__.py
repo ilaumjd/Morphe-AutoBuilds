@@ -300,7 +300,12 @@ def run_build(
             manifest.set_version_name(output_apk, sign_input, release_version)
         sign_apk(sign_input, signed_apk)
         if sign_input != output_apk:
+            logging.info(f"named before signing: misaligned={manifest._misaligned(sign_input) or 'none'}")
             sign_input.unlink(missing_ok=True)
+        bad_align = manifest._misaligned(signed_apk)
+        if bad_align:
+            signed_apk.unlink(missing_ok=True)
+            raise RuntimeError(f"native libraries misaligned after signing: {sorted(bad_align)[:3]}")
         output_apk.unlink(missing_ok=True)
 
         # Keep a record of what was applied and what was left off, to review later.

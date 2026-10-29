@@ -116,40 +116,80 @@ def set_version_name_bytes(manifest: bytes, new_name: str) -> bytes:
     return out[:4] + struct.pack("<I", len(out)) + out[8:]
 
 
-def _aligned_info(item: zipfile.ZipInfo, pos: int) -> zipfile.ZipInfo:
+def _align_for(name: str, compress_type: int) -> int:
+    if compress_type != zipfile.ZIP_STORED:
+        return 0
+    if name.endswith(".so"):
+        return 4096
+    if name == "resources.arsc":
+        return 4
+    return 0
+
+
+def _aligned_info(item: zipfile.ZipInfo, pos: int, correction: int = 0) -> zipfile.ZipInfo:
     """Copy of ``item`` whose data starts on the boundary Android needs, like zipalign.
 
     Stored .so files must start on a 4096-byte boundary and resources.arsc on 4 bytes.
     The padding goes into a zero extra field (id 0xD935), which is what zipalign writes.
+    ``correction`` is added to the padding when a previous pass measured a wrong offset.
     """
     info = zipfile.ZipInfo(item.filename, date_time=item.date_time)
     info.external_attr = item.external_attr
     info.create_system = item.create_system
-    if item.filename.endswith(".so"):
-        align = 4096
-    elif item.filename == "resources.arsc":
-        align = 4
-    else:
-        align = 0
+    info.compress_type = item.compress_type
+    align = _align_for(item.filename, item.compress_type)
     extra = b""
-    if align and item.compress_type == zipfile.ZIP_STORED:
+    if align:
         nl = len(item.filename.encode("utf-8"))
-        need = (-(pos + 30 + nl)) % align
+        need = (-(pos + 30 + nl + correction)) % align
         if need and need < 4:
             need += align
         if need:
             extra = struct.pack("<HH", 0xD935, need - 4) + b"\x00" * (need - 4)
     info.extra = extra
-    info.compress_type = item.compress_type
     return info
 
 
-def set_version_name(apk_in: Path, apk_out: Path, new_name: str) -> None:
-    """Copy an APK, changing only AndroidManifest.xml's versionName and keeping alignment."""
+def _write(apk_in: Path, apk_out: Path, new_name: str, corrections: dict) -> None:
     with zipfile.ZipFile(apk_in) as src, zipfile.ZipFile(apk_out, "w", zipfile.ZIP_DEFLATED) as dst:
         for item in src.infolist():
             data = src.read(item.filename)
             if item.filename == "AndroidManifest.xml":
                 data = set_version_name_bytes(data, new_name)
-            info = _aligned_info(item, dst.fp.tell())
+            info = _aligned_info(item, dst.fp.tell(), corrections.get(item.filename, 0))
             dst.writestr(info, data)
+
+
+def _misaligned(apk: Path) -> dict:
+    """Stored entries whose data does not start on their boundary, with the error in bytes."""
+    bad = {}
+    with zipfile.ZipFile(apk) as z, open(apk, "rb") as f:
+        for i in z.infolist():
+            align = _align_for(i.filename, i.compress_type)
+            if not align:
+                continue
+            f.seek(i.header_offset)
+            h = f.read(30)
+            nl = int.from_bytes(h[26:28], "little")
+            el = int.from_bytes(h[28:30], "little")
+            data_off = i.header_offset + 30 + nl + el
+            if data_off % align:
+                bad[i.filename] = (-data_off) % align
+    return bad
+
+
+def set_version_name(apk_in: Path, apk_out: Path, new_name: str) -> None:
+    """Copy an APK, changing only AndroidManifest.xml's versionName and keeping alignment.
+
+    The padding is measured after each pass and corrected if the real offset differs, so the
+    result is checked instead of assumed. Raises if alignment still fails after three passes.
+    """
+    corrections: dict = {}
+    for _ in range(3):
+        _write(apk_in, apk_out, new_name, corrections)
+        bad = _misaligned(apk_out)
+        if not bad:
+            return
+        for name, delta in bad.items():
+            corrections[name] = corrections.get(name, 0) + delta
+    raise RuntimeError(f"alignment still wrong after 3 passes: {sorted(_misaligned(apk_out))[:3]}")

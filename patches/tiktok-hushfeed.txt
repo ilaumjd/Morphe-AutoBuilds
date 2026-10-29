@@ -16,3 +16,4 @@
 + Turn off screen transitions
 + App lock
 + Show engagement rate
++ Hide Play Store update offer

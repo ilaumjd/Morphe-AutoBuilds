@@ -16,6 +16,7 @@ from src import (
 from src import patchlog
 from src.paths import patched_apk
 from src import manifest
+from src import notify
 
 KEYSTORE = {
     "path": getenv("KEYSTORE_PATH", "keystore/public.jks"),
@@ -386,6 +387,10 @@ def main(stage: str = "all"):
             except Exception as e:
                 logging.error(f"❌ {label} failed: {e}")
                 apk_path = None
+                notify.alert(
+                    f"Morphe: {app_name} needs a new APK",
+                    f"{label} failed at the {action.lower()} stage:\n{e}",
+                )
 
             if not apk_path and arch == "arm64-v8a":
                 fallback_label = f"{app_name}/{source}/universal"
@@ -402,6 +407,10 @@ def main(stage: str = "all"):
                         )
                 except Exception as e:
                     logging.error(f"❌ {fallback_label} failed: {e}")
+                    notify.alert(
+                        f"Morphe: {app_name} needs a new APK",
+                        f"{fallback_label} failed at the {action.lower()} stage:\n{e}",
+                    )
 
             source_results.setdefault(source, []).append(bool(apk_path))
             result = label if stage == "download" else apk_path

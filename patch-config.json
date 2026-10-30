@@ -19,7 +19,7 @@
       "app_name": "brave",
       "title": "Brave",
       "source": "kveld",
-      "release_suffix": true,
+      "release_suffix": false,
       "arches": ["arm64-v8a"]
     },
     {

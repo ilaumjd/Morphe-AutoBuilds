@@ -1,0 +1,5 @@
+[
+  { "name": "bimgmail", "title": "BearInMindCat (Gmail)" },
+  { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
+  { "user": "bearinmindcat", "repo": "morphe-patches", "tag": "latest" }
+]

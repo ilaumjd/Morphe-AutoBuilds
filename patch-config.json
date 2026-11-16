@@ -26,7 +26,7 @@
       "app_name": "maps",
       "title": "Google Maps",
       "package": "org.ungoogled.android.apps.maps",
-      "source": "bearinmindcat",
+      "source": "bimmaps",
       "release_suffix": true,
       "arches": ["arm64-v8a"]
     },
@@ -94,7 +94,7 @@
     {
       "app_name": "gmail",
       "title": "Gmail",
-      "source": "bearinmindcat",
+      "source": "bimgmail",
       "release_suffix": true,
       "arches": ["arm64-v8a"]
     },

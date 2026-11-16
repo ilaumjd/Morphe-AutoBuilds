@@ -1,5 +1,5 @@
 [
-  { "name": "bearinmindcat", "title": "BearInMindCat" },
+  { "name": "bimmaps", "title": "BearInMindCat (Maps)" },
   { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
   { "user": "bearinmindcat", "repo": "morphe-patches", "tag": "v2.9.7" }
 ]

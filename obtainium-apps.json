@@ -50,10 +50,17 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^gboard-\"}"
     },
     {
+      "id": "com.google.android.gm",
+      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
+      "author": "ilaumjd",
+      "name": "Gmail (BearInMindCat (Gmail))",
+      "additionalSettings": "{\"apkFilterRegEx\":\"^gmail-\"}"
+    },
+    {
       "id": "org.ungoogled.android.apps.maps",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
-      "name": "Google Maps (BearInMindCat)",
+      "name": "Google Maps (BearInMindCat (Maps))",
       "additionalSettings": "{\"apkFilterRegEx\":\"^maps-\"}"
     },
     {

@@ -6,5 +6,4 @@
 + Mark as read in notifications
 + Strip link trackers
 + Turn off Smart Compose
-+ Add microG-RE support
 + Clone app {packageName=com.google.android.gm.morphe}

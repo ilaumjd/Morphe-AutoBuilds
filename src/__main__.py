@@ -79,6 +79,10 @@ def patch_rule_lines(app_name: str, source: str) -> list[str]:
     return [line.strip() for line in path.read_text().splitlines() if line.strip().startswith(("+", "-"))]
 
 
+# Every patch bundle of a source, primary first. A source with several bundles (e.g. a bundle
+# plus a clone patch from another bundle) patches with all of them in one CLI run.
+SOURCE_BUNDLES: dict[str, list[Path]] = {}
+
 def find_tools(download_files: list[Path]) -> tuple[Path | None, Path | None]:
     """Pick the Morphe CLI jar and patch bundle from the downloaded files."""
     cli = utils.find_file(download_files, ".jar", contains="morphe")
@@ -272,12 +276,14 @@ def run_build(
         output_apk = Path(f"{app_name}-{arch}-patch-v{version}.apk")
 
         try:
-            patch_output = utils.run_process([
-                "java", "-jar", str(cli),
-                "patch", "--patches", str(patches),
-                "--out", str(output_apk), str(input_apk),
-                *patch_args
-            ], capture=True)
+            bundles = SOURCE_BUNDLES.get(source, [patches])
+            if len(bundles) > 1:
+                # Each bundle gets the same rules; the CLI applies the names it knows and skips the rest.
+                groups = [arg for b in bundles for arg in ("-p", str(b), *patch_args)]
+                patch_cmd = ["patch", *groups, "--out", str(output_apk), str(input_apk)]
+            else:
+                patch_cmd = ["patch", "--patches", str(patches), "--out", str(output_apk), str(input_apk), *patch_args]
+            patch_output = utils.run_process(["java", "-jar", str(cli), *patch_cmd], capture=True)
         except subprocess.CalledProcessError as e:
             # Remove temp files; we'll re-download if retrying.
             input_apk.unlink(missing_ok=True)
@@ -377,6 +383,7 @@ def main(stage: str = "all"):
                         )
                     logging.info(f"✅ Using CLI: {cli.name}")
                     logging.info(f"✅ Using patches: {patches.name}")
+                    SOURCE_BUNDLES[source] = [f for f in download_files if f.suffix == ".mpp"]
                     tools[source] = (cli, patches, name)
 
                 # An app can pin its own CLI version ("cli" in patch-config.json).

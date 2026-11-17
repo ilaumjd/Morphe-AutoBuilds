@@ -1,0 +1,10 @@
++ Hide ads
++ Hide AI
++ Hide upsells
++ Remove telemetry
++ Block remote images
++ Mark as read in notifications
++ Strip link trackers
++ Turn off Smart Compose
++ Add microG-RE support
++ Clone app {packageName=com.google.android.gm.morphe}

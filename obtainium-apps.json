@@ -53,7 +53,7 @@
       "id": "com.google.android.gm",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
-      "name": "Gmail (BearInMindCat (Gmail))",
+      "name": "Gmail (Gmail (clone))",
       "additionalSettings": "{\"apkFilterRegEx\":\"^gmail-\"}"
     },
     {

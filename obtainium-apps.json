@@ -50,7 +50,7 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^gboard-\"}"
     },
     {
-      "id": "com.google.android.gm",
+      "id": "org.ungoogled.android.gm.microg",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",
       "name": "Gmail (Gmail)",

@@ -94,6 +94,7 @@
     {
       "app_name": "gmail",
       "title": "Gmail",
+      "package": "org.ungoogled.android.gm.microg",
       "source": "gmailclone",
       "release_suffix": true,
       "arches": ["arm64-v8a"]

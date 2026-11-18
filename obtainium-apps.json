@@ -57,13 +57,6 @@
       "additionalSettings": "{\"apkFilterRegEx\":\"^gmail-\"}"
     },
     {
-      "id": "com.google.android.gm",
-      "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
-      "author": "ilaumjd",
-      "name": "Gmail (no microG) (Gmail)",
-      "additionalSettings": "{\"apkFilterRegEx\":\"^gmailnomg-\"}"
-    },
-    {
       "id": "org.ungoogled.android.apps.maps",
       "url": "https://github.com/ilaumjd/Morphe-AutoBuilds",
       "author": "ilaumjd",

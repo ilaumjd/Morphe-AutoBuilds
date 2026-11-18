@@ -95,7 +95,14 @@
       "app_name": "gmail",
       "title": "Gmail",
       "source": "gmailclone",
-      "release_suffix": false,
+      "release_suffix": true,
+      "arches": ["arm64-v8a"]
+    },
+    {
+      "app_name": "gmailnomg",
+      "title": "Gmail (no microG)",
+      "source": "gmailclone",
+      "release_suffix": true,
       "arches": ["arm64-v8a"]
     },
     {

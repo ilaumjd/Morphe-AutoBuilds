@@ -217,6 +217,14 @@ def release_suffix_enabled(app_name: str, source: str) -> bool:
         for e in cfg["patch_list"]
     )
 
+def release_label(app_name: str, source: str) -> str:
+    """Optional "release_label" from the app's patch-config entry, appended to the version."""
+    cfg = json.loads((Path("patch-config.json")).read_text())
+    for e in cfg["patch_list"]:
+        if e.get("app_name") == app_name and e.get("source") == source:
+            return e.get("release_label", "")
+    return ""
+
 def bundle_version(patches: Path) -> str:
     match = re.search(r"patches-(\d[\w.]*)\.mpp$", Path(patches).name)
     if not match:
@@ -298,6 +306,10 @@ def run_build(
         release_version = version
         if release_suffix_enabled(app_name, source):
             release_version = f"{version}-p{bundle_version(patches)}"
+            label = release_label(app_name, source)
+            if label:
+                # Two builds of one app version need different names (e.g. with and without a patch).
+                release_version = f"{release_version}-{label}"
         signed_apk = patched_apk(app_name, arch, name, release_version, BUILD_DATE)
         signed_apk.parent.mkdir(parents=True, exist_ok=True)
         sign_input = output_apk

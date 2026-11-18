@@ -1,8 +1,0 @@
-+ Hide ads
-+ Hide AI
-+ Hide upsells
-+ Remove telemetry
-+ Block remote images
-+ Mark as read in notifications
-+ Strip link trackers
-+ Turn off Smart Compose

@@ -1,6 +1,0 @@
-[
-  { "name": "gmailclone", "title": "Gmail (clone)" },
-  { "user": "MorpheApp", "repo": "morphe-cli", "tag": "latest" },
-  { "user": "bearinmindcat", "repo": "morphe-patches", "tag": "latest" },
-  { "user": "MorpheApp", "repo": "morphe-patches", "tag": "latest" }
-]
